@@ -11,7 +11,7 @@ import jenkins.model.Jenkins;
 
 public abstract class ProcCleaner implements Callable<Void,Exception>, Describable<ProcCleaner>, ExtensionPoint {
 
-	private transient BuildListener log;
+	private BuildListener log;
 	
 	public BuildListener getLog() {
 		return log;

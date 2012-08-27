@@ -50,8 +50,11 @@ public class PreBuildCleanup extends BuildWrapper {
 			 System.out.println("[proc-cleanup] Calling remote cleaner");
 			 c.call(cleaner);
 		 } catch(Exception e) {
+			 System.out.println("PROC-CLEANER EXCEPTION");
 			 e.printStackTrace();
 		 }
+		 
+		 cleaner.setLog(null);
 		 
 		 /*VirtualChannel c = launcher.getChannel();
 		 try {
