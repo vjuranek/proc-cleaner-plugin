@@ -1,0 +1,6 @@
+executionCommand = "cmd /c \"WMIC PROCESS get Caption,Commandline,Processid | findstr " + pid + "\"";
+PID ziskavam z netstat -anfo
+http://www.sans.org/security-resources/sec560/windows_command_line_sheet_v1.pdf
+
+List all processes:
+tasklist
