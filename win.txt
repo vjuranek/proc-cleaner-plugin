@@ -4,3 +4,6 @@ http://www.sans.org/security-resources/sec560/windows_command_line_sheet_v1.pdf
 
 List all processes:
 tasklist
+
+ps -eW
+taskkill /F /PID $PID
