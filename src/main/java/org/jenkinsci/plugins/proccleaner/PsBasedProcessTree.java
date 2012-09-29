@@ -51,7 +51,6 @@ public class PsBasedProcessTree {
 	}
 	
 	public PsProcess createFromString(String psLine) {
-		//System.out.println("Creating ps:" + psLine.trim());
 		String[] ps = psLine.trim().split(" +", 3);
 		if(ps.length < 3)
 			return null;
@@ -131,7 +130,6 @@ public class PsBasedProcessTree {
 		}
 		
 		public void kill() {
-			System.out.println("Killing " + this);
 			if(log != null)
 				log.println("Killing " + this);
 			killHard();
@@ -146,7 +144,6 @@ public class PsBasedProcessTree {
 		}
 		
 		public void killAllExceptMe() {
-			System.out.println("Proc kill");
 			Map<Integer, PsProcess> ph = getParentHierarchy(this);
 			for(PsProcess p : PsBasedProcessTree.this.processList) 
 				if(this != p && !ph.containsKey(new Integer(p.pid))) // don't kill myself (and parent) //TODO should contain whole possible hierarchy

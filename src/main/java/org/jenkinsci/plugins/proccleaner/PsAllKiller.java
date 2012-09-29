@@ -6,8 +6,8 @@ import hudson.Extension;
 public class PsAllKiller extends PsKiller {
 	
 	protected void doKill(PsBasedProcessTree ptree, int me) {
-		System.out.println("KILL THEM ALL: ");
 		ptree.getByPid(me).killAllExceptMe();
 	}
 
+	private static final long serialVersionUID = 1L;
 }

@@ -59,10 +59,6 @@ public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallab
         return null;
 	}
 	
-	/*public void doCleanup() {
-		System.out.println("tady by se mel volat groovy script na slavu!");
-	}*/
-
 	@Extension
 	public static class GroovyScriptCleanerDescriptor extends ProcCleanerDescriptor {
 		public String getDisplayName() {

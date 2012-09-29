@@ -4,9 +4,15 @@ import hudson.Extension;
 
 import java.io.IOException;
 
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class PsCleaner extends ProcCleaner {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private final String killerType;
 	private final PsKiller killer;
@@ -23,11 +29,12 @@ public class PsCleaner extends ProcCleaner {
 	}
 	
 	public Void call() throws Exception {
-		System.out.println("[proc-cleanup] Calling killer");
 		try {
-			System.out.println("pred kill, log je " + getLog());
-			killer.kill("test_hudson",getLog().getLogger());
-			System.out.println("po kill");
+			if(getDescriptor().isSwitchedOff()) {
+				getLog().getLogger().println("Proc cleanup globally switched off, contract you Jenkins administartor to turn it on");
+				return null;
+			}
+			killer.kill(getDescriptor().getUsername(),getLog().getLogger());
 		} catch(IOException e) {
 			e.printStackTrace();
 		} catch(InterruptedException e) {
@@ -36,20 +43,38 @@ public class PsCleaner extends ProcCleaner {
 		return null;
 	}
 	
-	/*public void doCleanup() {
-		try {
-			killer.kill("vjuranek",getLog());
-		} catch(IOException e) {
-			e.printStackTrace();
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-	}*/
+	public PsCleanerDescriptor getDescriptor() {
+		return (PsCleanerDescriptor) Jenkins.getInstance().getDescriptor(getClass());
+	}
 	
 	@Extension
 	public static class PsCleanerDescriptor extends ProcCleanerDescriptor {
+	
+		private String username;
+		private boolean switchedOff;
+		
+		public PsCleanerDescriptor() {
+			load();
+		}
+		
+		public String getUsername() {
+			return username;
+		}
+		
+		public boolean isSwitchedOff() {
+			return switchedOff;
+		}
+		
 		public String getDisplayName() {
 			return "Ps-based process cleaner";
+		}
+		
+		@Override
+		public boolean configure(StaplerRequest req, JSONObject json) {
+			username = json.getString("username");
+			switchedOff = json.getBoolean("switchedOff");
+			save();
+			return true;
 		}
 	}
 	

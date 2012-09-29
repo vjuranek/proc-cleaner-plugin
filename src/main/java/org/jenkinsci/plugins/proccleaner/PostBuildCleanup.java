@@ -12,7 +12,6 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 
-import org.jenkinsci.plugins.proccleaner.PreBuildCleanup.NoopEnv;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class PostBuildCleanup extends Notifier {
@@ -39,19 +38,13 @@ public class PostBuildCleanup extends Notifier {
 		 }
 		
 		cleaner.setLog(listener);
-		// cleaner.doCleanup();
 		VirtualChannel c = launcher.getChannel();
 		try {
 			c.call(cleaner);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		/*
-		 * VirtualChannel c = run.getExecutor().getOwner().getChannel(); try{
-		 * c.call(new KillCommand()); } catch(Exception e){ e.printStackTrace();
-		 * }
-		 */
+		
 		return true;
 	}
 

@@ -11,6 +11,7 @@ import jenkins.model.Jenkins;
 
 public abstract class ProcCleaner implements Callable<Void,Exception>, Describable<ProcCleaner>, ExtensionPoint {
 
+	private static final long serialVersionUID = 1L;
 	private BuildListener log;
 	
 	public BuildListener getLog() {
@@ -21,8 +22,6 @@ public abstract class ProcCleaner implements Callable<Void,Exception>, Describab
 		this.log = log;
 	}
 	
-	//public abstract void doCleanup();
-
 	public ProcCleanerDescriptor getDescriptor() {
 		return (ProcCleanerDescriptor) Jenkins.getInstance().getDescriptor(getClass());
 	}
@@ -40,7 +39,7 @@ public abstract class ProcCleaner implements Callable<Void,Exception>, Describab
 		protected ProcCleanerDescriptor(Class<? extends ProcCleaner> clazz) {
 			super(clazz);
 		}
-
+		
 		protected ProcCleanerDescriptor() {
 		}
 		

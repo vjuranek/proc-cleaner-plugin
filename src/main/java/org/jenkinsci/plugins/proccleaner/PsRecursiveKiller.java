@@ -10,9 +10,11 @@ import org.jenkinsci.plugins.proccleaner.PsBasedProcessTree.PsProcess;
 public class PsRecursiveKiller extends PsKiller {
 	
 	protected void doKill(PsBasedProcessTree ptree, int me) {
-		System.out.println("RECURSIVE KILL: ");
-		List<PsProcess> childern = ptree.getByPid(me).getChildren(); // TODO get children recursively?
+		List<PsProcess> childern = ptree.getByPid(me).getChildren(); // TODO get children recursively
 		for(PsProcess p : childern)
 			p.killRecursively();
 	}
+
+	private static final long serialVersionUID = 1L;
+
 }
