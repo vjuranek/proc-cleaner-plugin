@@ -12,7 +12,7 @@ import jenkins.model.Jenkins;
 public abstract class ProcCleaner implements Callable<Void,Exception>, Describable<ProcCleaner>, ExtensionPoint {
 
 	private static final long serialVersionUID = 1L;
-	private BuildListener log;
+	protected BuildListener log;
 	
 	public BuildListener getLog() {
 		return log;
@@ -20,6 +20,14 @@ public abstract class ProcCleaner implements Callable<Void,Exception>, Describab
 	
 	public void setLog(BuildListener log) {
 		this.log = log;
+	}
+	
+	public void setup(BuildListener log) {
+		this.log = log;
+	}
+	
+	public void tearDown() {
+		this.log = null;
 	}
 	
 	public ProcCleanerDescriptor getDescriptor() {

@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.proccleaner;
 
 import hudson.Extension;
+import hudson.model.BuildListener;
 
 import java.io.IOException;
 
@@ -16,25 +17,33 @@ public class PsCleaner extends ProcCleaner {
 	
 	private final String killerType;
 	private final PsKiller killer;
+	private String username;
+	private boolean switchedOff;
 	
 	@DataBoundConstructor
 	public PsCleaner(String killerType) {
 		this.killerType = killerType;
 		this.killer = PsKiller.all().getDynamic(killerType);
-		super.setLog(null);
 	}
 	
 	public String getKillerType() {
 		return killerType;
 	}
 	
+	@Override
+	public void setup(BuildListener log) {
+		this.log = log;
+		username = getDescriptor().getUsername();  //TODO setup remotely in call() method, use different class loader?
+		switchedOff = getDescriptor().isSwitchedOff();
+	}
+	
 	public Void call() throws Exception {
 		try {
-			if(getDescriptor().isSwitchedOff()) {
+			if(switchedOff) {
 				getLog().getLogger().println("Proc cleanup globally switched off, contract you Jenkins administartor to turn it on");
 				return null;
 			}
-			killer.kill(getDescriptor().getUsername(),getLog().getLogger());
+			killer.kill(username,getLog().getLogger());
 		} catch(IOException e) {
 			e.printStackTrace();
 		} catch(InterruptedException e) {

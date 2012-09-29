@@ -37,13 +37,14 @@ public class PostBuildCleanup extends Notifier {
 			 return true;
 		 }
 		
-		cleaner.setLog(listener);
+		cleaner.setup(listener);
 		VirtualChannel c = launcher.getChannel();
 		try {
 			c.call(cleaner);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		cleaner.tearDown();
 		
 		return true;
 	}

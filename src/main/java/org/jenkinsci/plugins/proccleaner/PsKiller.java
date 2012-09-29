@@ -20,6 +20,7 @@ public abstract class PsKiller implements ExtensionPoint, Serializable {
 	
 	public void kill(String user, PrintStream log) throws InterruptedException, IOException {
 		PsBasedProcessTree ptree = PsBasedProcessTree.createProcessTreeFor(user);
+		System.out.println("Process tree: " + ptree.toString());
 		ptree.setLog(log);
 		int me = LIBC.getpid();
 		doKill(ptree, me);

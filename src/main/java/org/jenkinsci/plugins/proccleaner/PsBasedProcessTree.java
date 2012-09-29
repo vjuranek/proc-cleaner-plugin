@@ -61,6 +61,13 @@ public class PsBasedProcessTree {
 		return new Integer(str.trim()).intValue();
 	}
 	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for(PsProcess ps : processList)
+			sb.append(ps.toString());
+		return sb.toString();
+	}
+	
 	public static PsBasedProcessTree createProcessTreeFor(String user) throws InterruptedException, IOException {
 		String[] cmd = {"ps","-u",user,"-o","pid,ppid,args"};
 		ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -130,6 +137,7 @@ public class PsBasedProcessTree {
 		}
 		
 		public void kill() {
+			System.out.println("Killing " + pid + ", args: " + args);
 			if(log != null)
 				log.println("Killing " + this);
 			killHard();

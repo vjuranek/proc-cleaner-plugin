@@ -36,15 +36,15 @@ public class PreBuildCleanup extends BuildWrapper {
 			return new NoopEnv();
 		}
 
-		cleaner.setLog(listener);
+		cleaner.setup(listener);
 		VirtualChannel c = launcher.getChannel();
 		try {
 			c.call(cleaner);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		cleaner.setLog(null);
+		cleaner.tearDown();
+		
 		return new NoopEnv();
 	}
 
