@@ -32,7 +32,7 @@ public class PsCleaner extends ProcCleaner {
 	
 	@Override
 	public void setup(BuildListener log) {
-		this.log = log;
+		setLog(log);
 		username = getDescriptor().getUsername();  //TODO setup remotely in call() method, use different class loader?
 		switchedOff = getDescriptor().isSwitchedOff();
 	}
