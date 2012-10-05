@@ -7,3 +7,12 @@ tasklist
 
 ps -eW
 taskkill /F /PID $PID
+
+
+WMIC PROCESS GET Caption,Commandline,Processid,ParentProcessId
+WMIC PROCESS GET /?
+
+wmic process where (name like "%exe%") call getowner
+
+http://isc.sans.edu/diary.html?storyid=1622
+http://theinterw3bs.com/wiki/index.php?title=WMIC_Commands
