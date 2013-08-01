@@ -9,11 +9,23 @@ import hudson.model.Descriptor;
 import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 
+import java.lang.management.ManagementFactory;
+
 public abstract class ProcCleaner implements Callable<Void,Exception>, Describable<ProcCleaner>, ExtensionPoint {
 
 	private static final long serialVersionUID = 1L;
 	private BuildListener log;
-	
+
+    /**
+     *
+     * @return pid of the ProcCleaner process
+     */
+    public static int getpid(){
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        int index = jvmName.indexOf('@');
+        return Integer.parseInt(jvmName.substring(0,index));
+    }
+
 	public BuildListener getLog() {
 		return log;
 	}
