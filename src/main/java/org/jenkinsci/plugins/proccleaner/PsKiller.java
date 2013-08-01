@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.proccleaner;
 
-import static hudson.util.jna.GNUCLibrary.LIBC;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
@@ -14,7 +13,7 @@ public abstract class PsKiller implements ExtensionPoint, Serializable {
 
 	public void kill(String user) throws InterruptedException, IOException {
 		PsBasedProcessTree ptree = PsBasedProcessTree.createProcessTreeFor(user);
-		int me = LIBC.getpid();
+		int me = ProcCleaner.getpid();
 		doKill(ptree, me);
 	}
 	
@@ -22,7 +21,7 @@ public abstract class PsKiller implements ExtensionPoint, Serializable {
 		PsBasedProcessTree ptree = PsBasedProcessTree.createProcessTreeFor(user);
 		System.out.println("Process tree: " + ptree.toString());
 		ptree.setLog(log);
-		int me = LIBC.getpid();
+		int me = ProcCleaner.getpid();
 		doKill(ptree, me);
 	}
 	
