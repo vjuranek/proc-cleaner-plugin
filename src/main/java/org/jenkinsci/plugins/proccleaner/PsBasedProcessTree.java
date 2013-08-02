@@ -1,30 +1,25 @@
 package org.jenkinsci.plugins.proccleaner;
 
-import static hudson.util.jna.GNUCLibrary.LIBC;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 /**
- * Represents process tree obtain from ps utility. 
+ * Represents process tree obtain from ps utility.
  * Should work on Linux and most Unixes (at least Sun, HP and AIX)
  * 
  * @author vjuranek
  *
  */
-public class PsBasedProcessTree {
+public abstract class PsBasedProcessTree {
 	
 	private List<PsProcess> processList;
 	private PrintStream log;
 	
 	public PsBasedProcessTree() {
-		this.processList = new ArrayList<PsBasedProcessTree.PsProcess>();
+		this.processList = new ArrayList<PsProcess>();
 	}
 	
 	public List<PsProcess> getProcessList() {
@@ -45,7 +40,7 @@ public class PsBasedProcessTree {
 	
 	public PsProcess getByPid(int pid) {
 		for(PsProcess p : PsBasedProcessTree.this.processList)
-			if(pid == p.pid)
+			if(pid == p.getPid())
 				return p;
 		return null;
 	}
@@ -54,11 +49,11 @@ public class PsBasedProcessTree {
 		String[] ps = psLine.trim().split(" +", 3);
 		if(ps.length < 3)
 			return null;
-		return new PsProcess(s2i(ps[0]), s2i(ps[1]), ps[2]);
+		return PsProcessFactory.createPsProcess(s2i(ps[0]), s2i(ps[1]), ps[2], PsBasedProcessTree.this);
 	}
 	
 	private int s2i(String str) {
-		return new Integer(str.trim()).intValue();
+        return new Integer(str.trim()).intValue();
 	}
 	
 	public String toString() {
@@ -68,126 +63,7 @@ public class PsBasedProcessTree {
 		return sb.toString();
 	}
 	
-	public static PsBasedProcessTree createProcessTreeFor(String user) throws InterruptedException, IOException {
-		String[] cmd = {"ps","-u",user,"-o","pid,ppid,args"};
-		ProcessBuilder pb = new ProcessBuilder(cmd);
-		pb.redirectErrorStream(true);
-		Process proc = pb.start();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-		int ec = proc.waitFor();
-		PsBasedProcessTree ptree = new PsBasedProcessTree();
-		String line = reader.readLine(); // first line should be "PID  PPID COMMAND" - skip it
-		while((line = reader.readLine()) != null)
-			ptree.addProcess(line);
-		return ptree;
-	}
-	
-	
-	/**
-	 * Represent process created by parsing ps output line
-	 * 
-	 * @author vjuranek
-	 *
-	 */
-	public class PsProcess {
-		
-		private final int pid;
-		private final int ppid;
-		private final String args;
-		
-		public PsProcess(int pid, int ppid, String args) {
-			this.pid = pid;
-			this.ppid = ppid;
-			this.args = args;
-		}
-		
-		public int getPid() {
-			return pid;
-		}
-	
-		public int getPpid() {
-			return ppid;
-		}
-		
-		public String getArgs() {
-			return args;
-		}
-
-		public PsProcess getParent() {
-			return PsBasedProcessTree.this.getByPid(ppid);
-		}
-		
-		public PsBasedProcessTree getProcessTree() {
-			return PsBasedProcessTree.this;
-		}
-
-		public List<PsProcess> getChildren() {
-			List<PsProcess> children = new ArrayList<PsProcess>();
-			for(PsProcess p : PsBasedProcessTree.this.processList) 
-				if(this == p.getParent())
-					children.add(p);
-			
-			return children;
-		}
-		
-		public void killRecursively() {
-			for(PsProcess p : getChildren())
-				p.killRecursively();
-			kill();
-		}
-		
-		public void kill() {
-			System.out.println("Killing " + pid + ", args: " + args);
-			if(log != null)
-				log.println("Killing " + this);
-			killHard();
-		}
-		
-		public void killHard() {
-			kill(9);
-		}
-		
-		public void kill(int signum) {
-			LIBC.kill(pid, signum);
-		}
-		
-		public void killAllExceptMe() {
-			Map<Integer, PsProcess> ph = getParentHierarchy(this);
-			for(PsProcess p : PsBasedProcessTree.this.processList) 
-				if(this != p && !ph.containsKey(new Integer(p.pid))) // don't kill myself (and parent) //TODO should contain whole possible hierarchy
-					p.kill();
-		}
-		/*
-		public Map<Integer,PsProcess> getParentHierarchy() {
-			Map<Integer,PsProcess> ph = new HashMap<Integer, PsBasedProcessTree.PsProcess>();
-			return ph;
-		}
-		*/
-		public Map<Integer, PsProcess> getParentHierarchy(PsProcess p) {
-			Map<Integer, PsProcess> ph = new HashMap<Integer, PsBasedProcessTree.PsProcess>();
-			while((p = p.getParent()) != null) {
-				//p = p.getParent();
-				ph.put(new Integer(p.pid), p);
-			}
-			return ph;
-		}
-		
-		public String toString() {
-			return "Process PID = " + pid + ", PPID = " + ppid + ", ARGS = " + args;
-		}
-		
-		public boolean equals(Object o) {
-			if(o instanceof PsProcess)
-				if(pid == ((PsProcess)o).pid)
-					return true;
-			return false;
-		}
-		
-		//TODO implement hashCode etc.
-		
-        // private static final long serialVersionUID = 1L;
-		
-	}
+	public abstract PsBasedProcessTree createProcessTreeFor(String user) throws InterruptedException, IOException;
 	
 	
 	/*

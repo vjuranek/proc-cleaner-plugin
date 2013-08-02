@@ -4,8 +4,6 @@ import hudson.Extension;
 
 import java.util.List;
 
-import org.jenkinsci.plugins.proccleaner.PsBasedProcessTree.PsProcess;
-
 @Extension
 public class PsRecursiveKiller extends PsKiller {
 	
