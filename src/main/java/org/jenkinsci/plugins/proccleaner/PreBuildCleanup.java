@@ -31,11 +31,6 @@ public class PreBuildCleanup extends BuildWrapper {
 
 		listener.getLogger().println("[Process cleanup]");
 
-		if (!launcher.isUnix()) {
-			listener.getLogger().println("Not a Linux/Unix slave, skipping Process cleanup");
-			return new NoopEnv();
-		}
-
 		cleaner.setup(listener);
 		VirtualChannel c = launcher.getChannel();
 		try {
