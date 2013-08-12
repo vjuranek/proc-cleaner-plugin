@@ -32,11 +32,6 @@ public class PostBuildCleanup extends Notifier {
 		
 		listener.getLogger().println("[Process cleanup]");
 		
-		if(!launcher.isUnix()) {
-			 listener.getLogger().println("Not a Linux/Unix slave, skipping Process cleanup");
-			 return true;
-		 }
-		
 		cleaner.setup(listener);
 		VirtualChannel c = launcher.getChannel();
 		try {
