@@ -26,7 +26,7 @@ public class PreBuildCleanup extends BuildWrapper {
 	}
 
 	@Override
-	public Environment setUp(AbstractBuild build, Launcher launcher,
+	public void preCheckout(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
 
 		listener.getLogger().println("[Process cleanup]");
@@ -34,13 +34,19 @@ public class PreBuildCleanup extends BuildWrapper {
 		cleaner.setup(listener);
 		VirtualChannel c = launcher.getChannel();
 		try {
-			c.call(cleaner);
+		    c.call(cleaner);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		cleaner.tearDown();
-		
-		return new NoopEnv();
+	}
+
+
+	@Override
+	public Environment setUp(AbstractBuild build, Launcher launcher,
+			BuildListener listener) throws IOException, InterruptedException {
+	    //no-op
+	    return new NoopEnv();
 	}
 
 	@Extension
