@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.proccleaner;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.matrix.MatrixBuild;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
@@ -29,6 +30,9 @@ public class PreBuildCleanup extends BuildWrapper {
 	public void preCheckout(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
 
+	    // Do not run for matrix parent
+	    if (build instanceof MatrixBuild) return;
+
 		listener.getLogger().println("[Process cleanup]");
 
 		cleaner.setup(listener);
@@ -52,10 +56,10 @@ public class PreBuildCleanup extends BuildWrapper {
 	@Extension
 	public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
 
-		public String getDisplayName() {
+		@Override
+        public String getDisplayName() {
 			return "Process cleanup";// Messages.PreBuildCleanup_Delete_workspace();
 		}
-
 	}
 
 	class NoopEnv extends Environment {
