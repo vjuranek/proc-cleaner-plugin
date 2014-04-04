@@ -2,11 +2,9 @@ package org.jenkinsci.plugins.proccleaner;
 
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.matrix.MatrixBuild;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
-import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildWrapper;
 
 import java.io.IOException;
@@ -29,22 +27,8 @@ public class PreBuildCleanup extends BuildWrapper {
 	@Override
 	public void preCheckout(AbstractBuild build, Launcher launcher,
 			BuildListener listener) throws IOException, InterruptedException {
-
-	    // Do not run for matrix parent
-	    if (build instanceof MatrixBuild) return;
-
-		listener.getLogger().println("[Process cleanup]");
-
-		cleaner.setup(listener);
-		VirtualChannel c = launcher.getChannel();
-		try {
-		    c.call(cleaner);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		cleaner.tearDown();
+	    cleaner.performCleanup(build, launcher, listener);
 	}
-
 
 	@Override
 	public Environment setUp(AbstractBuild build, Launcher launcher,

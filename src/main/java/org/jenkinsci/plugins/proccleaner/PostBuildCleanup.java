@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
-import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -29,18 +28,7 @@ public class PostBuildCleanup extends Notifier {
 
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-		
-		listener.getLogger().println("[Process cleanup]");
-		
-		cleaner.setup(listener);
-		VirtualChannel c = launcher.getChannel();
-		try {
-			c.call(cleaner);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		cleaner.tearDown();
-		
+		cleaner.performCleanup(build, launcher, listener);
 		return true;
 	}
 
@@ -52,7 +40,8 @@ public class PostBuildCleanup extends Notifier {
 	public static final class DescriptorImpl extends
 			BuildStepDescriptor<Publisher> {
 
-		public String getDisplayName() {
+		@Override
+        public String getDisplayName() {
 			return "Process cleanup";// Messages.PreBuildCleanup_Delete_workspace();
 		}
 

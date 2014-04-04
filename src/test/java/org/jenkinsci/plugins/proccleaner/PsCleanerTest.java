@@ -24,11 +24,17 @@
 package org.jenkinsci.plugins.proccleaner;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.model.AbstractProject;
+import hudson.model.FreeStyleProject;
+import hudson.model.Project;
+import hudson.tasks.Shell;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,24 +43,63 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class PsCleanerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    private PsCleaner preCleaner;
+    private PsCleaner postCleaner;
 
-    /* As long as current implementation is concerned, BuildWrapper.preCheckout()
-     * is called for MatrixBuild but Notifier.perform() is not. Both are run for
-     * MatrixRun.
-     */
+    @Test public void runCleanup() throws Exception {
+        FreeStyleProject job = j.createFreeStyleProject();
+        setupKillers(job);
+        job.scheduleBuild2(0).get();
+
+        verify(preCleaner).call();
+        verify(postCleaner).call();
+    }
+
     @Test public void doNotRunCleanForMatrixParent() throws Exception {
         MatrixProject m = j.createMatrixProject();
-        m.setAxes(new AxisList(new TextAxis("axis", "a", "b")));
-
-        PsCleaner preCleaner = mock(PsCleaner.class);
-        PsCleaner postCleaner = mock(PsCleaner.class);
-
-        m.getPublishersList().add(new PostBuildCleanup(preCleaner));
-        m.getBuildWrappersList().add(new PreBuildCleanup(postCleaner));
+        m.setAxes(new AxisList(new TextAxis("axis", "a")));
+        setupKillers(m);
 
         m.scheduleBuild2(0).get();
 
+        verify(preCleaner).call();
+        verify(postCleaner).call();
+    }
+
+    @Test public void doNotCleanOnSlaveWithOtherBuildRunning() throws Exception {
+        FreeStyleProject running = j.createFreeStyleProject();
+        running.getBuildersList().add(new Shell("sleep 300"));
+        running.scheduleBuild2(0);
+
+        FreeStyleProject cleaned = j.createFreeStyleProject();
+        setupKillers(cleaned);
+
+        cleaned.scheduleBuild2(0).get();
+
+        verify(preCleaner, never()).call();
+        verify(postCleaner, never()).call();
+    }
+
+    @Test public void runCleanupOnNonconcurrentJobs() throws Exception {
+        FreeStyleProject job = j.createFreeStyleProject();
+        setupKillers(job);
+        job.scheduleBuild2(0).get();
+        job.scheduleBuild2(0).get();
+
         verify(preCleaner, times(2)).call();
         verify(postCleaner, times(2)).call();
+    }
+
+    private void setupKillers(AbstractProject<?, ?> project) throws Exception {
+        preCleaner = mock(PsCleaner.class, withSettings().serializable());
+        postCleaner = mock(PsCleaner.class, withSettings().serializable());
+
+        project.getPublishersList().add(new PostBuildCleanup(preCleaner));
+        PreBuildCleanup cleaner = new PreBuildCleanup(postCleaner);
+        if (project instanceof MatrixProject) {
+            ((MatrixProject) project).getBuildWrappersList().add(cleaner);
+        } else {
+            ((Project<?, ?>) project).getBuildWrappersList().add(cleaner);
+        }
     }
 }
