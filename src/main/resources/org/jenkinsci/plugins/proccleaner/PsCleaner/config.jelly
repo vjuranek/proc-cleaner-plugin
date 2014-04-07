@@ -1,18 +1,18 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<j:invokeStatic var="psKillers" className="org.jenkinsci.plugins.proccleaner.PsKiller" method="all" />
-	<f:entry title="Killer type" field="killerType">
-    	<select name="killerType">
-    		<j:forEach var="psKiller" items="${psKillers}" varStatus="loop">
-    			<j:choose>
-    				<j:when test="${instance.cleaner.killerType==psKiller.class.name}">
-						<option value="${psKiller.class.name}" selected="true">${psKiller.displayName}</option>
-					</j:when>
-					<j:otherwise>
-						<option value="${psKiller.class.name}">${psKiller.displayName}</option>
-					</j:otherwise>
-				</j:choose>
-			</j:forEach>
-    	</select>
-	</f:entry>
+    <j:invokeStatic var="psKillers" className="org.jenkinsci.plugins.proccleaner.PsKiller" method="all" />
+    <f:entry title="Killer type" field="killerType">
+        <select name="killerType">
+            <j:forEach var="psKiller" items="${psKillers}" varStatus="loop">
+                <j:choose>
+                    <j:when test="${instance.cleaner.killerType==psKiller.class.name}">
+                        <option value="${psKiller.class.name}" selected="true">${psKiller.displayName}</option>
+                    </j:when>
+                    <j:otherwise>
+                        <option value="${psKiller.class.name}">${psKiller.displayName}</option>
+                    </j:otherwise>
+                </j:choose>
+            </j:forEach>
+        </select>
+    </f:entry>
 </j:jelly>

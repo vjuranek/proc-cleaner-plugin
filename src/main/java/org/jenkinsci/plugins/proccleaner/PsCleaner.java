@@ -36,79 +36,79 @@ import org.kohsuke.stapler.StaplerRequest;
 
 public class PsCleaner extends ProcCleaner {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final String killerType;
-	private final PsKiller killer;
-	private String username;
-	private boolean switchedOff;
+    private final String killerType;
+    private final PsKiller killer;
+    private String username;
+    private boolean switchedOff;
 
-	@DataBoundConstructor
-	public PsCleaner(String killerType) {
-		this.killerType = killerType;
-		this.killer = PsKiller.all().getDynamic(killerType);
-	}
+    @DataBoundConstructor
+    public PsCleaner(String killerType) {
+        this.killerType = killerType;
+        this.killer = PsKiller.all().getDynamic(killerType);
+    }
 
-	public String getKillerType() {
-		return killerType;
-	}
+    public String getKillerType() {
+        return killerType;
+    }
 
-	@Override
-	public void setup(BuildListener log) {
-		setLog(log);
-		username = getDescriptor().getUsername();  //TODO setup remotely in call() method, use different class loader?
-		switchedOff = getDescriptor().isSwitchedOff();
-	}
+    @Override
+    public void setup(BuildListener log) {
+        setLog(log);
+        username = getDescriptor().getUsername();  //TODO setup remotely in call() method, use different class loader?
+        switchedOff = getDescriptor().isSwitchedOff();
+    }
 
-	public Void call() throws Exception {
-		try {
-			if(switchedOff) {
-				getLog().getLogger().println("Proc cleanup globally switched off, contract you Jenkins administartor to turn it on");
-				return null;
-			}
-			killer.kill(username,getLog().getLogger());
-		} catch(IOException e) {
-			e.printStackTrace();
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+    public Void call() throws Exception {
+        try {
+            if(switchedOff) {
+                getLog().getLogger().println("Proc cleanup globally switched off, contract you Jenkins administartor to turn it on");
+                return null;
+            }
+            killer.kill(username,getLog().getLogger());
+        } catch(IOException e) {
+            e.printStackTrace();
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-	@Override
+    @Override
     public PsCleanerDescriptor getDescriptor() {
-		return (PsCleanerDescriptor) Jenkins.getInstance().getDescriptor(getClass());
-	}
+        return (PsCleanerDescriptor) Jenkins.getInstance().getDescriptor(getClass());
+    }
 
-	@Extension
-	public static class PsCleanerDescriptor extends ProcCleanerDescriptor {
+    @Extension
+    public static class PsCleanerDescriptor extends ProcCleanerDescriptor {
 
-		private String username;
-		private boolean switchedOff;
+        private String username;
+        private boolean switchedOff;
 
-		public PsCleanerDescriptor() {
-			load();
-		}
+        public PsCleanerDescriptor() {
+            load();
+        }
 
-		public String getUsername() {
-			return username;
-		}
+        public String getUsername() {
+            return username;
+        }
 
-		public boolean isSwitchedOff() {
-			return switchedOff;
-		}
+        public boolean isSwitchedOff() {
+            return switchedOff;
+        }
 
-		@Override
+        @Override
         public String getDisplayName() {
-			return Messages.PsCleaner_DisplayName();
-		}
+            return Messages.PsCleaner_DisplayName();
+        }
 
-		@Override
-		public boolean configure(StaplerRequest req, JSONObject json) {
-			username = json.getString("username");
-			switchedOff = json.getBoolean("switchedOff");
-			save();
-			return true;
-		}
-	}
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) {
+            username = json.getString("username");
+            switchedOff = json.getBoolean("switchedOff");
+            save();
+            return true;
+        }
+    }
 }

@@ -39,25 +39,25 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallable<Void,Exception> {
 
-	private String script;
-	private transient ClassLoader cl;
+    private String script;
+    private transient ClassLoader cl;
 
-	@DataBoundConstructor
-	public GroovyScriptCleaner(String script) {
-		this.script = script;
-	}
+    @DataBoundConstructor
+    public GroovyScriptCleaner(String script) {
+        this.script = script;
+    }
 
-	public String getScript() {
-		return script;
-	}
+    public String getScript() {
+        return script;
+    }
 
-	public ClassLoader getClassLoader() {
-	    return Jenkins.getInstance().getPluginManager().uberClassLoader;
-	}
+    public ClassLoader getClassLoader() {
+        return Jenkins.getInstance().getPluginManager().uberClassLoader;
+    }
 
-	public Void call() throws Exception {
-		CompilerConfiguration compilerConfig = new CompilerConfiguration();
-		compilerConfig.addCompilationCustomizers(new ImportCustomizer().addStarImports(
+    public Void call() throws Exception {
+        CompilerConfiguration compilerConfig = new CompilerConfiguration();
+        compilerConfig.addCompilationCustomizers(new ImportCustomizer().addStarImports(
                 "jenkins",
                 "jenkins.model",
                 "hudson",
@@ -80,15 +80,15 @@ public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallab
         }
 
         return null;
-	}
+    }
 
-	@Extension
-	public static class GroovyScriptCleanerDescriptor extends ProcCleanerDescriptor {
-		@Override
+    @Extension
+    public static class GroovyScriptCleanerDescriptor extends ProcCleanerDescriptor {
+        @Override
         public String getDisplayName() {
-			return Messages.GroovyScriptCleaner_DisplayName();
-		}
-	}
+            return Messages.GroovyScriptCleaner_DisplayName();
+        }
+    }
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 }

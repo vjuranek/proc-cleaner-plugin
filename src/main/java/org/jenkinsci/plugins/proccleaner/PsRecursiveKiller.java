@@ -30,12 +30,12 @@ import java.util.List;
 @Extension
 public class PsRecursiveKiller extends PsKiller {
 
-	@Override
+    @Override
     protected void doKill(PsBasedProcessTree ptree, int me) {
-		List<PsProcess> childern = ptree.getByPid(me).getChildren(); // TODO get children recursively
-		for(PsProcess p : childern)
-			p.killRecursively();
-	}
+        List<PsProcess> childern = ptree.getByPid(me).getChildren(); // TODO get children recursively
+        for(PsProcess p : childern)
+            p.killRecursively();
+    }
 
     @Override
     public String getDisplayName() {

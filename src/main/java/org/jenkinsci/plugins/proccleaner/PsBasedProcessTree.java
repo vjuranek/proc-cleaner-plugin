@@ -36,58 +36,58 @@ import java.util.List;
  */
 public abstract class PsBasedProcessTree {
 
-	private List<PsProcess> processList;
-	private PrintStream log;
+    private List<PsProcess> processList;
+    private PrintStream log;
 
-	public PsBasedProcessTree() {
-		this.processList = new ArrayList<PsProcess>();
-	}
+    public PsBasedProcessTree() {
+        this.processList = new ArrayList<PsProcess>();
+    }
 
-	public List<PsProcess> getProcessList() {
-		return processList;
-	}
+    public List<PsProcess> getProcessList() {
+        return processList;
+    }
 
-	public PrintStream getLog() {
-		return log;
-	}
+    public PrintStream getLog() {
+        return log;
+    }
 
-	public void setLog(PrintStream log) {
-		this.log = log;
-	}
+    public void setLog(PrintStream log) {
+        this.log = log;
+    }
 
-	public void addProcess(String psLine) {
-		processList.add(createFromString(psLine));
-	}
+    public void addProcess(String psLine) {
+        processList.add(createFromString(psLine));
+    }
 
-	public PsProcess getByPid(int pid) {
-		for(PsProcess p : PsBasedProcessTree.this.processList)
-			if(pid == p.getPid())
-				return p;
-		return null;
-	}
+    public PsProcess getByPid(int pid) {
+        for(PsProcess p : PsBasedProcessTree.this.processList)
+            if(pid == p.getPid())
+                return p;
+        return null;
+    }
 
-	public PsProcess createFromString(String psLine) {
-		String[] ps = psLine.trim().split(" +", 3);
-		if(ps.length < 3)
-			return null;
-		return PsProcessFactory.createPsProcess(s2i(ps[0]), s2i(ps[1]), ps[2], PsBasedProcessTree.this);
-	}
+    public PsProcess createFromString(String psLine) {
+        String[] ps = psLine.trim().split(" +", 3);
+        if(ps.length < 3)
+            return null;
+        return PsProcessFactory.createPsProcess(s2i(ps[0]), s2i(ps[1]), ps[2], PsBasedProcessTree.this);
+    }
 
-	private int s2i(String str) {
+    private int s2i(String str) {
         return new Integer(str.trim()).intValue();
-	}
+    }
 
-	@Override
+    @Override
     public String toString() {
-		StringBuffer sb = new StringBuffer();
-		for(PsProcess ps : processList)
-			sb.append(ps.toString());
-		return sb.toString();
-	}
+        StringBuffer sb = new StringBuffer();
+        for(PsProcess ps : processList)
+            sb.append(ps.toString());
+        return sb.toString();
+    }
 
-	public abstract PsBasedProcessTree createProcessTreeFor(String user) throws InterruptedException, IOException;
+    public abstract PsBasedProcessTree createProcessTreeFor(String user) throws InterruptedException, IOException;
 
-	/*
+    /*
 
    PID  PPID COMMAND
 14833 14829 sshd: hudson@pts/0
@@ -103,5 +103,5 @@ public abstract class PsBasedProcessTree {
 30850 30846 sshd: hudson@notty
 30851 30850 /qa/tools/opt/amd64/jdk1.6.0_last/bin/java -Djava.net.preferIPv4Stack=true -Djava.home=/qa/tools/opt/amd64/jdk1.6.0_last/jre -Xmx700m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -jar /home/hudson/hudson_release/WEB-INF/slave.jar
 
-	 */
+     */
 }

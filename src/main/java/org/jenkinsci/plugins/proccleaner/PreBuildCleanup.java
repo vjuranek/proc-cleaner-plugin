@@ -36,39 +36,39 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class PreBuildCleanup extends BuildWrapper {
 
-	private final ProcCleaner cleaner;
+    private final ProcCleaner cleaner;
 
-	@DataBoundConstructor
-	public PreBuildCleanup(ProcCleaner cleaner) {
-		this.cleaner = cleaner;
-	}
+    @DataBoundConstructor
+    public PreBuildCleanup(ProcCleaner cleaner) {
+        this.cleaner = cleaner;
+    }
 
-	public ProcCleaner getCleaner() {
-		return cleaner;
-	}
+    public ProcCleaner getCleaner() {
+        return cleaner;
+    }
 
-	@Override
-	public void preCheckout(AbstractBuild build, Launcher launcher,
-			BuildListener listener) throws IOException, InterruptedException {
-	    cleaner.performCleanup(build, launcher, listener);
-	}
+    @Override
+    public void preCheckout(AbstractBuild build, Launcher launcher,
+            BuildListener listener) throws IOException, InterruptedException {
+        cleaner.performCleanup(build, launcher, listener);
+    }
 
-	@Override
-	public Environment setUp(AbstractBuild build, Launcher launcher,
-			BuildListener listener) throws IOException, InterruptedException {
-	    //no-op
-	    return new NoopEnv();
-	}
+    @Override
+    public Environment setUp(AbstractBuild build, Launcher launcher,
+            BuildListener listener) throws IOException, InterruptedException {
+        //no-op
+        return new NoopEnv();
+    }
 
-	@Extension
-	public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
+    @Extension
+    public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
 
-		@Override
+        @Override
         public String getDisplayName() {
-			return Messages.PreBuildCleanup_DisplayName();
-		}
-	}
+            return Messages.PreBuildCleanup_DisplayName();
+        }
+    }
 
-	class NoopEnv extends Environment {
-	}
+    class NoopEnv extends Environment {
+    }
 }

@@ -29,9 +29,9 @@ import hudson.Extension;
 public class PsAllKiller extends PsKiller {
 
     @Override
-	protected void doKill(PsBasedProcessTree ptree, int me) {
-		ptree.getByPid(me).killAllExceptMe();
-	}
+    protected void doKill(PsBasedProcessTree ptree, int me) {
+        ptree.getByPid(me).killAllExceptMe();
+    }
 
     @Override
     public String getDisplayName() {
