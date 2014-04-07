@@ -51,9 +51,9 @@ public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallab
 		return script;
 	}
 
-	 public ClassLoader getClassLoader() {
-         return Jenkins.getInstance().getPluginManager().uberClassLoader;
-     }
+	public ClassLoader getClassLoader() {
+	    return Jenkins.getInstance().getPluginManager().uberClassLoader;
+	}
 
 	public Void call() throws Exception {
 		CompilerConfiguration compilerConfig = new CompilerConfiguration();
@@ -86,7 +86,7 @@ public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallab
 	public static class GroovyScriptCleanerDescriptor extends ProcCleanerDescriptor {
 		@Override
         public String getDisplayName() {
-			return "Groovy script process cleaner";
+			return Messages.GroovyScriptCleaner_DisplayName();
 		}
 	}
 

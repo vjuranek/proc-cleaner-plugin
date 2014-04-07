@@ -65,7 +65,7 @@ public class PreBuildCleanup extends BuildWrapper {
 
 		@Override
         public String getDisplayName() {
-			return "Process cleanup";// Messages.PreBuildCleanup_Delete_workspace();
+			return Messages.PreBuildCleanup_DisplayName();
 		}
 	}
 

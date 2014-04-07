@@ -100,7 +100,7 @@ public class PsCleaner extends ProcCleaner {
 
 		@Override
         public String getDisplayName() {
-			return "Ps-based process cleaner";
+			return Messages.PsCleaner_DisplayName();
 		}
 
 		@Override

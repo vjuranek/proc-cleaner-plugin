@@ -35,7 +35,7 @@ public class PsAllKiller extends PsKiller {
 
     @Override
     public String getDisplayName() {
-        return "Kill all processes launched by user";
+        return Messages.PsAllKiller_DisplayName();
     }
 
     private static final long serialVersionUID = 1L;

@@ -79,11 +79,13 @@ public abstract class ProcCleaner implements Callable<Void,Exception>, Describab
 	    if (build instanceof MatrixBuild) return;
 
 	    if (areThereOtherBuilds(build)) {
-	        listener.getLogger().println("[Process cleanup] Skipping, there are other builds using the slave.");
+	        listener.getLogger().println(
+	                Messages.ProcCleaner_SlaveNotUsedExclusively()
+	        );
 	        return;
 	    }
 
-	    listener.getLogger().println("[Process cleanup]");
+	    listener.getLogger().println(Messages.ProcCleaner_Running());
 
 	    this.setup(listener);
 	    VirtualChannel c = launcher.getChannel();

@@ -65,7 +65,7 @@ public class PostBuildCleanup extends Notifier {
 
 		@Override
         public String getDisplayName() {
-			return "Process cleanup";// Messages.PreBuildCleanup_Delete_workspace();
+			return Messages.PostBuildCleanup_DisplayName();
 		}
 
 		@Override

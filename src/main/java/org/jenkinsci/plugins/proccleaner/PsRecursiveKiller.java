@@ -39,7 +39,7 @@ public class PsRecursiveKiller extends PsKiller {
 
     @Override
     public String getDisplayName() {
-        return "Kill all child processes of slave agent";
+        return Messages.PsRecursiveKiller_DisplayName();
     }
 
     private static final long serialVersionUID = 1L;
