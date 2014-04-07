@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2012 Red Hat, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.jenkinsci.plugins.proccleaner;
 
 import java.io.IOException;
@@ -5,69 +28,67 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Represents process tree obtain from ps utility.
  * Should work on Linux and most Unixes (at least Sun, HP and AIX)
- * 
- * @author vjuranek
  *
+ * @author vjuranek
  */
 public abstract class PsBasedProcessTree {
-	
+
 	private List<PsProcess> processList;
 	private PrintStream log;
-	
+
 	public PsBasedProcessTree() {
 		this.processList = new ArrayList<PsProcess>();
 	}
-	
+
 	public List<PsProcess> getProcessList() {
 		return processList;
 	}
-	
+
 	public PrintStream getLog() {
 		return log;
 	}
-	
+
 	public void setLog(PrintStream log) {
 		this.log = log;
 	}
-	
+
 	public void addProcess(String psLine) {
 		processList.add(createFromString(psLine));
 	}
-	
+
 	public PsProcess getByPid(int pid) {
 		for(PsProcess p : PsBasedProcessTree.this.processList)
 			if(pid == p.getPid())
 				return p;
 		return null;
 	}
-	
+
 	public PsProcess createFromString(String psLine) {
 		String[] ps = psLine.trim().split(" +", 3);
 		if(ps.length < 3)
 			return null;
 		return PsProcessFactory.createPsProcess(s2i(ps[0]), s2i(ps[1]), ps[2], PsBasedProcessTree.this);
 	}
-	
+
 	private int s2i(String str) {
         return new Integer(str.trim()).intValue();
 	}
-	
-	public String toString() {
+
+	@Override
+    public String toString() {
 		StringBuffer sb = new StringBuffer();
 		for(PsProcess ps : processList)
 			sb.append(ps.toString());
 		return sb.toString();
 	}
-	
+
 	public abstract PsBasedProcessTree createProcessTreeFor(String user) throws InterruptedException, IOException;
-	
-	
+
 	/*
-	  
+
    PID  PPID COMMAND
 14833 14829 sshd: hudson@pts/0
 14834 14833 -bash
@@ -81,8 +102,6 @@ public abstract class PsBasedProcessTree {
 18161 16404 ps -u hudson -o pid,ppid,args
 30850 30846 sshd: hudson@notty
 30851 30850 /qa/tools/opt/amd64/jdk1.6.0_last/bin/java -Djava.net.preferIPv4Stack=true -Djava.home=/qa/tools/opt/amd64/jdk1.6.0_last/jre -Xmx700m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -jar /home/hudson/hudson_release/WEB-INF/slave.jar
-	 
-	 */
-	
 
+	 */
 }
