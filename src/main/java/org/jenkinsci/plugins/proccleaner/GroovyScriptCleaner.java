@@ -26,18 +26,15 @@ package org.jenkinsci.plugins.proccleaner;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
-import hudson.remoting.DelegatingCallable;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import jenkins.model.Jenkins;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallable<Void,Exception> {
+public class GroovyScriptCleaner extends ProcCleaner {
 
     private String script;
     private transient ClassLoader cl;
@@ -51,11 +48,8 @@ public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallab
         return script;
     }
 
-    public ClassLoader getClassLoader() {
-        return Jenkins.getInstance().getPluginManager().uberClassLoader;
-    }
-
-    public Void call() throws Exception {
+    @Override
+    public void clean(CleanRequest request) {
         CompilerConfiguration compilerConfig = new CompilerConfiguration();
         compilerConfig.addCompilationCustomizers(new ImportCustomizer().addStarImports(
                 "jenkins",
@@ -78,8 +72,6 @@ public class GroovyScriptCleaner extends ProcCleaner implements DelegatingCallab
         } catch (Throwable t) {
             t.printStackTrace(pw);
         }
-
-        return null;
     }
 
     @Extension

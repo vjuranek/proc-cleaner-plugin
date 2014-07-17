@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -31,11 +33,20 @@ import static org.mockito.Mockito.withSettings;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.model.FreeStyleBuild;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Project;
+import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
+import hudson.util.OneShotEvent;
 
+import java.io.IOException;
+
+import jenkins.model.Jenkins;
+
+import org.jenkinsci.plugins.proccleaner.PsCleaner.PsCleanerDescriptor;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -46,13 +57,41 @@ public class PsCleanerTest {
     private PsCleaner preCleaner;
     private PsCleaner postCleaner;
 
+    @Before public void setUp() {
+        preCleaner = mock(PsCleaner.class, withSettings().serializable());
+        postCleaner = mock(PsCleaner.class, withSettings().serializable());
+    }
+
+    @Test public void skipWhenGloballyTurnedOff() throws Exception {
+        DumbSlave slave = j.createOnlineSlave();
+
+        PsCleanerDescriptor descriptor = j.jenkins.getDescriptorByType(PsCleaner.PsCleanerDescriptor.class);
+        descriptor.setSwitchedOff(true);
+        descriptor.setUsername("I_am_close_to_certain_there_is_no_such_user");
+        System.out.println("Switched off " + descriptor.isSwitchedOff());
+
+        FreeStyleProject job = j.createFreeStyleProject();
+        job.setAssignedNode(slave);
+        setPreProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
+
+        FreeStyleBuild build = job.scheduleBuild2(0).get();
+        assertTrue(build.getLog(), build.getLog().contains("Process cleanup is globally turned off, contact your Jenkins administartor to turn it on."));
+
+        job = j.createFreeStyleProject();
+        job.setAssignedNode(slave);
+        setPostProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
+
+        build = job.scheduleBuild2(0).get();
+        assertTrue(build.getLog(), build.getLog().contains("Process cleanup is globally turned off, contact your Jenkins administartor to turn it on."));
+    }
+
     @Test public void runCleanup() throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();
         setupKillers(job);
         job.scheduleBuild2(0).get();
 
-        verify(preCleaner).call();
-        verify(postCleaner).call();
+        verify(preCleaner).clean(any(ProcCleaner.CleanRequest.class));
+        verify(postCleaner).clean(any(ProcCleaner.CleanRequest.class));
     }
 
     @Test public void doNotRunCleanForMatrixParent() throws Exception {
@@ -62,8 +101,8 @@ public class PsCleanerTest {
 
         m.scheduleBuild2(0).get();
 
-        verify(preCleaner).call();
-        verify(postCleaner).call();
+        verify(preCleaner).clean(any(ProcCleaner.CleanRequest.class));
+        verify(postCleaner).clean(any(ProcCleaner.CleanRequest.class));
     }
 
     @Test public void doNotCleanOnSlaveWithOtherBuildRunning() throws Exception {
@@ -76,8 +115,8 @@ public class PsCleanerTest {
 
         cleaned.scheduleBuild2(0).get();
 
-        verify(preCleaner, never()).call();
-        verify(postCleaner, never()).call();
+        verify(preCleaner, never()).clean(any(ProcCleaner.CleanRequest.class));
+        verify(postCleaner, never()).clean(any(ProcCleaner.CleanRequest.class));
     }
 
     @Test public void runCleanupOnNonconcurrentJobs() throws Exception {
@@ -86,20 +125,66 @@ public class PsCleanerTest {
         job.scheduleBuild2(0).get();
         job.scheduleBuild2(0).get();
 
-        verify(preCleaner, times(2)).call();
-        verify(postCleaner, times(2)).call();
+        verify(preCleaner, times(2)).clean(any(ProcCleaner.CleanRequest.class));
+        verify(postCleaner, times(2)).clean(any(ProcCleaner.CleanRequest.class));
+    }
+
+    @Test public void saveJobWhileKillingIsInProgress() throws Exception {
+        FreeStyleProject job = j.createFreeStyleProject();
+
+        final BlockingCleaner preCleaner = new BlockingCleaner();
+        final BlockingCleaner postCleaner = new BlockingCleaner();
+        setPreProcCleaner(job, preCleaner);
+        setPostProcCleaner(job, postCleaner);
+
+        job.scheduleBuild2(0);
+
+        preCleaner.started.block();
+        job.save(); // Should not fail
+        preCleaner.done.signal();
+
+        postCleaner.started.block();
+        job.save(); // Should not fail
+        postCleaner.done.signal();
+    }
+
+    private static final class BlockingCleaner extends PsCleaner {
+        private final OneShotEvent started = new OneShotEvent();
+        private final OneShotEvent done = new OneShotEvent();
+
+        public BlockingCleaner() {
+            super(null);
+        }
+
+        @Override
+        public PsCleanerDescriptor getDescriptor() {
+            return (PsCleanerDescriptor) Jenkins.getInstance().getDescriptor(PsCleaner.class);
+        }
+
+        @Override
+        public void clean(CleanRequest request) throws IOException, InterruptedException {
+            started.signal();
+            done.block();
+        }
     }
 
     private void setupKillers(AbstractProject<?, ?> project) throws Exception {
-        preCleaner = mock(PsCleaner.class, withSettings().serializable());
-        postCleaner = mock(PsCleaner.class, withSettings().serializable());
+        setPreProcCleaner(project, preCleaner);
+        setPostProcCleaner(project, postCleaner);
+    }
 
-        project.getPublishersList().add(new PostBuildCleanup(preCleaner));
-        PreBuildCleanup cleaner = new PreBuildCleanup(postCleaner);
+    private void setPreProcCleaner(AbstractProject<?, ?> project, ProcCleaner preCleaner) throws Exception {
+
+        PreBuildCleanup cleaner = new PreBuildCleanup(preCleaner);
         if (project instanceof MatrixProject) {
             ((MatrixProject) project).getBuildWrappersList().add(cleaner);
         } else {
             ((Project<?, ?>) project).getBuildWrappersList().add(cleaner);
         }
+    }
+
+    private void setPostProcCleaner(AbstractProject<?, ?> project, ProcCleaner postCleaner) throws Exception {
+
+        project.getPublishersList().add(new PostBuildCleanup(postCleaner));
     }
 }

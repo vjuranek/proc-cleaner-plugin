@@ -24,7 +24,6 @@
 package org.jenkinsci.plugins.proccleaner;
 
 import hudson.Extension;
-import hudson.model.BuildListener;
 
 import java.io.IOException;
 
@@ -54,25 +53,25 @@ public class PsCleaner extends ProcCleaner {
     }
 
     @Override
-    public void setup(BuildListener log) {
-        setLog(log);
+    public void setup() {
         username = getDescriptor().getUsername();  //TODO setup remotely in call() method, use different class loader?
         switchedOff = getDescriptor().isSwitchedOff();
     }
 
-    public Void call() throws Exception {
+    @Override
+    public void clean(CleanRequest request) throws IOException, InterruptedException {
+        if(switchedOff) {
+            request.getListener().getLogger().println("Process cleanup is globally turned off, contact your Jenkins administartor to turn it on.");
+            return;
+        }
+
         try {
-            if(switchedOff) {
-                getLog().getLogger().println("Process cleanup is globally turned off, contact your Jenkins administartor to turn it on.");
-                return null;
-            }
-            killer.kill(username,getLog().getLogger());
+            killer.kill(username, request.getListener().getLogger());
         } catch(IOException e) {
             e.printStackTrace();
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     @Override
@@ -109,6 +108,14 @@ public class PsCleaner extends ProcCleaner {
             switchedOff = json.getBoolean("switchedOff");
             save();
             return true;
+        }
+
+        /*package*/ void setSwitchedOff(boolean value) {
+            switchedOff = value;
+        }
+
+        /*package*/ void setUsername(String username) {
+            this.username = username;
         }
     }
 }

@@ -39,14 +39,15 @@ import hudson.model.Queue.Executable;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 
 import jenkins.model.Jenkins;
 
-public abstract class ProcCleaner implements Callable<Void,Exception>, Describable<ProcCleaner>, ExtensionPoint {
+public abstract class ProcCleaner implements Describable<ProcCleaner>, ExtensionPoint, Serializable {
 
     private static final long serialVersionUID = 1L;
-    private BuildListener log;
 
     /**
      *
@@ -58,21 +59,19 @@ public abstract class ProcCleaner implements Callable<Void,Exception>, Describab
         return Integer.parseInt(jvmName.substring(0,index));
     }
 
-    public BuildListener getLog() {
-        return log;
-    }
+    /**
+     * Prepare cleaner for action.
+     *
+     * This method is called on master (before deserialization).
+     */
+    public void setup() {}
 
-    public void setLog(BuildListener log) {
-        this.log = log;
-    }
-
-    public void setup(BuildListener log) {
-        this.log = log;
-    }
-
-    public void tearDown() {
-        this.log = null;
-    }
+    /**
+     * Clean the processes.
+     *
+     * This method is called on slaves (after deserialization).
+     */
+    public abstract void clean(CleanRequest request) throws IOException, InterruptedException;
 
     public final void performCleanup(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         // Do not run for matrix parent
@@ -87,14 +86,37 @@ public abstract class ProcCleaner implements Callable<Void,Exception>, Describab
 
         listener.getLogger().println(Messages.ProcCleaner_Running());
 
-        this.setup(listener);
+        setup();
         VirtualChannel c = launcher.getChannel();
         try {
-            c.call(this);
+            c.call(new CleanRequest(this, listener));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.tearDown();
+    }
+
+    /**
+     * Callable to invoke particular cleaner holding all data it can need.
+     *
+     * @author ogondza
+     */
+    public static final class CleanRequest implements Callable<Void,Exception> {
+        private final ProcCleaner cleaner;
+        private final BuildListener listener;
+
+        private CleanRequest(ProcCleaner procCleaner, BuildListener listener) {
+            this.cleaner = procCleaner;
+            this.listener = listener;
+        }
+
+        public Void call() throws Exception {
+            cleaner.clean(this);
+            return null;
+        }
+
+        public BuildListener getListener() {
+            return listener;
+        }
     }
 
     private boolean areThereOtherBuilds(AbstractBuild<?, ?> build) {
