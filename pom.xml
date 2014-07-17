@@ -11,6 +11,15 @@
 	<artifactId>proc-cleaner-plugin</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
+	<name>Process cleaner</name>
+        <description>Kill running processes before and after build.</description>
+        <url>http://wiki.jenkins-ci.org/display/JENKINS/Process+Cleaner+Plugin</url>
+	
+	<scm>
+                <connection>scm:git:git://github.com/jenkinsci/proc-cleaner-plugin.git</connection>
+                <developerConnection>scm:git:git@github.com:jenkinsci/proc-cleaner-plugin.git</developerConnection>
+                <url>https://github.com/jenkinsci/proc-cleaner-plugin</url>
+        </scm>
 
 	<repositories>
 		<repository>
