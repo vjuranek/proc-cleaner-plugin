@@ -36,7 +36,6 @@ import hudson.matrix.TextAxis;
 import hudson.model.FreeStyleBuild;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import hudson.model.Project;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
@@ -72,14 +71,14 @@ public class PsCleanerTest {
 
         FreeStyleProject job = j.createFreeStyleProject();
         job.setAssignedNode(slave);
-        setPreProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
+        Util.setPreProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
 
         FreeStyleBuild build = job.scheduleBuild2(0).get();
         assertTrue(build.getLog(), build.getLog().contains("Process cleanup is globally turned off, contact your Jenkins administartor to turn it on."));
 
         job = j.createFreeStyleProject();
         job.setAssignedNode(slave);
-        setPostProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
+        Util.setPostProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
 
         build = job.scheduleBuild2(0).get();
         assertTrue(build.getLog(), build.getLog().contains("Process cleanup is globally turned off, contact your Jenkins administartor to turn it on."));
@@ -134,8 +133,8 @@ public class PsCleanerTest {
 
         final BlockingCleaner preCleaner = new BlockingCleaner();
         final BlockingCleaner postCleaner = new BlockingCleaner();
-        setPreProcCleaner(job, preCleaner);
-        setPostProcCleaner(job, postCleaner);
+        Util.setPreProcCleaner(job, preCleaner);
+        Util.setPostProcCleaner(job, postCleaner);
 
         job.scheduleBuild2(0);
 
@@ -169,22 +168,7 @@ public class PsCleanerTest {
     }
 
     private void setupKillers(AbstractProject<?, ?> project) throws Exception {
-        setPreProcCleaner(project, preCleaner);
-        setPostProcCleaner(project, postCleaner);
-    }
-
-    private void setPreProcCleaner(AbstractProject<?, ?> project, ProcCleaner preCleaner) throws Exception {
-
-        PreBuildCleanup cleaner = new PreBuildCleanup(preCleaner);
-        if (project instanceof MatrixProject) {
-            ((MatrixProject) project).getBuildWrappersList().add(cleaner);
-        } else {
-            ((Project<?, ?>) project).getBuildWrappersList().add(cleaner);
-        }
-    }
-
-    private void setPostProcCleaner(AbstractProject<?, ?> project, ProcCleaner postCleaner) throws Exception {
-
-        project.getPublishersList().add(new PostBuildCleanup(postCleaner));
+        Util.setPreProcCleaner(project, preCleaner);
+        Util.setPostProcCleaner(project, postCleaner);
     }
 }
