@@ -27,8 +27,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.PrintStream;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -62,15 +61,15 @@ public class GroovyScriptCleaner extends ProcCleaner {
         }
 
         GroovyShell shell = new GroovyShell(cl, new Binding(), compilerConfig);
-        StringWriter out = new StringWriter();
-        PrintWriter pw = new PrintWriter(out);
-        shell.setVariable("out", pw);
+        final PrintStream scriptOut = request.getListener().getLogger();
+        shell.setVariable("out", scriptOut);
         try {
             Object output = shell.evaluate(script);
-            if(output!=null)
-            pw.println("Result: "+output);
+            if(output != null) {
+                scriptOut.println("Result: " + output);
+            }
         } catch (Throwable t) {
-            t.printStackTrace(pw);
+            t.printStackTrace(scriptOut);
         }
     }
 
