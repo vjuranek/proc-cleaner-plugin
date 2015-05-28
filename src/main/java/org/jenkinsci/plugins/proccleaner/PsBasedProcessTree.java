@@ -81,7 +81,7 @@ public abstract class PsBasedProcessTree {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         for(PsProcess ps : processList)
-            sb.append(ps.toString());
+            sb.append(ps.toString()).append("\n");
         return sb.toString();
     }
 
