@@ -40,7 +40,7 @@ public class PsCleaner extends ProcCleaner {
 	public Void call() throws Exception {
 		try {
 			if(switchedOff) {
-				getLog().getLogger().println("Proc cleanup globally switched off, contract you Jenkins administartor to turn it on");
+				getLog().getLogger().println("Proc cleanup globally switched off, contact you Jenkins administrator to turn it on");
 				return null;
 			}
 			killer.kill(username,getLog().getLogger());
