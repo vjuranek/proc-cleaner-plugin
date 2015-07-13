@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.proccleaner;
 
 import static org.junit.Assert.assertTrue;
+import static org.jenkinsci.plugins.proccleaner.Util.getLogAsString;
 import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 
@@ -40,8 +41,8 @@ public class GroovyScriptCleanerTest {
         Util.setPreProcCleaner(job, new GroovyScriptCleaner("println 'precleaner'; return 'precleaned!'"));
         Util.setPostProcCleaner(job, new GroovyScriptCleaner("println 'postcleaner'; return 'postcleaned!'"));
 
-        Build build = job.scheduleBuild2(0).get();
-        String log = build.getLog();
+        Build<?,?> build = job.scheduleBuild2(0).get();
+        String log = getLogAsString(build);
 
         assertTrue(log.contains("precleaner"));
         assertTrue(log.contains("Result: precleaned!"));
@@ -53,8 +54,8 @@ public class GroovyScriptCleanerTest {
         FreeStyleProject job = j.createFreeStyleProject();
         Util.setPreProcCleaner(job, new GroovyScriptCleaner("throw new NullPointerException('Failed groovy script');"));
 
-        Build build = job.scheduleBuild2(0).get();
-        String log = build.getLog();
+        Build<?,?> build = job.scheduleBuild2(0).get();
+        String log = getLogAsString(build);
 
         assertTrue(log.contains("java.lang.NullPointerException: Failed groovy script"));
     }

@@ -157,6 +157,9 @@ public class WMICProcess {
     }
 
     public class WMICProcessException extends Exception {
+        
+        private static final long serialVersionUID = 4810696271189726206L;
+
         public WMICProcessException(String message) {
             super(message);
         }

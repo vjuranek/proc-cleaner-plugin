@@ -24,10 +24,16 @@
 package org.jenkinsci.plugins.proccleaner;
 
 import hudson.matrix.MatrixProject;
+import hudson.model.Build;
 import hudson.model.AbstractProject;
 import hudson.model.Project;
 
+import java.io.IOException;
+import java.util.List;
+
 /*package*/ class Util {
+    
+    public static final int MAX_LOG_LINES = 100;
 
     public static void setPreProcCleaner(AbstractProject<?, ?> project, ProcCleaner preCleaner) throws Exception {
 
@@ -42,5 +48,18 @@ import hudson.model.Project;
     public static void setPostProcCleaner(AbstractProject<?, ?> project, ProcCleaner postCleaner) throws Exception {
 
         project.getPublishersList().add(new PostBuildCleanup(postCleaner));
+    }
+    
+    public static String getLogAsString(Build<?,?> build, int maxLines) throws IOException {
+        List<String> log = build.getLog(maxLines);
+        StringBuilder logStr = new StringBuilder("");
+        for (String line : log) {
+            logStr.append(line);
+        }
+        return logStr.toString();
+    }
+    
+    public static String getLogAsString(Build<?,?> build) throws IOException {
+        return getLogAsString(build, MAX_LOG_LINES);
     }
 }

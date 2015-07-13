@@ -69,6 +69,7 @@ public class PostBuildCleanup extends Notifier {
         }
 
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(Class clazz) {
             return true;
         }

@@ -109,6 +109,7 @@ public abstract class ProcCleaner implements Describable<ProcCleaner>, Extension
      * @author ogondza
      */
     public static final class CleanRequest implements Callable<Void,Exception> {
+        private static final long serialVersionUID = -3747367960274628624L;
         private final ProcCleaner cleaner;
         private final BuildListener listener;
 

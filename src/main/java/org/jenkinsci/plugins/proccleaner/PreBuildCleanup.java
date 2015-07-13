@@ -48,12 +48,14 @@ public class PreBuildCleanup extends BuildWrapper {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void preCheckout(AbstractBuild build, Launcher launcher,
             BuildListener listener) throws IOException, InterruptedException {
         cleaner.performCleanup(build, launcher, listener);
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Environment setUp(AbstractBuild build, Launcher launcher,
             BuildListener listener) throws IOException, InterruptedException {
         //no-op

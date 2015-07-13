@@ -32,6 +32,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
+import static org.jenkinsci.plugins.proccleaner.Util.getLogAsString;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -87,14 +88,16 @@ public class PsCleanerTest {
         Util.setPreProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
 
         FreeStyleBuild build = job.scheduleBuild2(0).get();
-        assertTrue(build.getLog(), build.getLog().contains("Process cleanup is globally turned off, contact your Jenkins administrator to turn it on."));
+        String log = getLogAsString(build);
+        assertTrue(log, log.contains("Process cleanup is globally turned off, contact your Jenkins administrator to turn it on."));
 
         job = j.createFreeStyleProject();
         job.setAssignedNode(slave);
         Util.setPostProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsAllKiller"));
 
         build = job.scheduleBuild2(0).get();
-        assertTrue(build.getLog(), build.getLog().contains("Process cleanup is globally turned off, contact your Jenkins administrator to turn it on."));
+        log = getLogAsString(build);
+        assertTrue(log, log.contains("Process cleanup is globally turned off, contact your Jenkins administrator to turn it on."));
     }
 
     @Test public void runCleanup() throws Exception {
@@ -211,10 +214,11 @@ public class PsCleanerTest {
         }
 
         assertTrue("Killing of long running process wasn't performed by Process cleanup, plug-in doesn't have an effect on the target platform!",
-                build.getLog().matches("(?s).*Killing Process PID = .*, PPID = .*, ARGS = .*org\\.jenkinsci\\.plugins\\.proccleaner\\.Sleeper Hello.*"));
+                getLogAsString(build).matches("(?s).*Killing Process PID = .*, PPID = .*, ARGS = .*org\\.jenkinsci\\.plugins\\.proccleaner\\.Sleeper Hello.*"));
     }
 
     private static final class BlockingCleaner extends PsCleaner {
+        private static final long serialVersionUID = -2223282784314127148L;
         private final OneShotEvent started = new OneShotEvent();
         private final OneShotEvent done = new OneShotEvent();
 
