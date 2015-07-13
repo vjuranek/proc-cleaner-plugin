@@ -23,32 +23,45 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
+
+import hudson.Functions;
+import hudson.Launcher;
+import hudson.Proc;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.FreeStyleBuild;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.Shell;
+import hudson.util.ArgumentListBuilder;
 import hudson.util.OneShotEvent;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 
+import org.apache.tools.ant.util.JavaEnvUtils;
 import org.jenkinsci.plugins.proccleaner.PsCleaner.PsCleanerDescriptor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestBuilder;
 
 public class PsCleanerTest {
 
@@ -147,6 +160,60 @@ public class PsCleanerTest {
         postCleaner.done.signal();
     }
 
+    @Test public void performProcessCleanup() throws Exception {
+
+        // Create and setup a job
+        FreeStyleProject job = j.createFreeStyleProject();
+
+        final Proc[] p = new Proc[1];
+        job.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build,
+                                   Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                ArgumentListBuilder args = new ArgumentListBuilder(
+                        JavaEnvUtils.getJreExecutable("java"),
+                        "-cp",
+                        "target/test-classes/",
+                        "org.jenkinsci.plugins.proccleaner.Sleeper",
+                        "Hello"
+                );
+                if (Functions.isWindows()) {
+                    args = args.toWindowsCommand();
+                }
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                final StreamTaskListener stlistener = new StreamTaskListener(out);
+                p[0] = new Launcher.LocalLauncher(stlistener)
+                        .launch()
+                        .stderr(System.err)
+                        .stdout(out)
+                        .cmds(args)
+                        .start();
+                return true;
+            }
+        });
+
+        // Configure plugin
+        PsCleanerDescriptor descriptor = j.jenkins.getDescriptorByType(PsCleaner.PsCleanerDescriptor.class);
+        descriptor.setUsername(System.getProperty("user.name", ""));
+
+        // Attach PostBuildStep and configure it properly
+        Util.setPostProcCleaner(job, new PsCleaner("org.jenkinsci.plugins.proccleaner.PsRecursiveKiller"));
+
+        // Execute a job
+        FreeStyleBuild build = job.scheduleBuild2(0).get();
+
+        assertNotNull("Long running process wasn't started!", p[0]);
+
+        boolean status;
+        if (status = p[0].isAlive()) {
+            p[0].kill();
+            assertFalse("Long running process is still alive!", status);
+        }
+
+        assertTrue("Killing of long running process wasn't performed by Process cleanup, plug-in doesn't have an effect on the target platform!",
+                build.getLog().matches("(?s).*Killing Process PID = .*, PPID = .*, ARGS = .*org\\.jenkinsci\\.plugins\\.proccleaner\\.Sleeper Hello.*"));
+    }
+
     private static final class BlockingCleaner extends PsCleaner {
         private final OneShotEvent started = new OneShotEvent();
         private final OneShotEvent done = new OneShotEvent();
@@ -171,4 +238,5 @@ public class PsCleanerTest {
         Util.setPreProcCleaner(project, preCleaner);
         Util.setPostProcCleaner(project, postCleaner);
     }
+
 }
