@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public abstract class PsProcess {
 
@@ -75,7 +76,7 @@ public abstract class PsProcess {
     }
 
     public void kill() {
-        System.out.println("Killing " + pid + ", args: " + args);
+        LOGGER.fine("Killing " + pid + ", args: " + args);
         if(ptree.getLog() != null)
             ptree.getLog().println("Killing " + this);
         killHard();
@@ -115,8 +116,10 @@ public abstract class PsProcess {
                 return true;
         return false;
     }
-
+    
     //TODO implement hashCode etc.
 
     // private static final long serialVersionUID = 1L;
+    
+    private static final Logger LOGGER = Logger.getLogger(PsProcess.class.getName());
 }

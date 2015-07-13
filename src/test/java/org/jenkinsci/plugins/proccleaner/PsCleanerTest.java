@@ -32,7 +32,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
-
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -51,6 +50,7 @@ import hudson.util.OneShotEvent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
@@ -80,7 +80,7 @@ public class PsCleanerTest {
         PsCleanerDescriptor descriptor = j.jenkins.getDescriptorByType(PsCleaner.PsCleanerDescriptor.class);
         descriptor.setSwitchedOff(true);
         descriptor.setUsername("I_am_close_to_certain_there_is_no_such_user");
-        System.out.println("Switched off " + descriptor.isSwitchedOff());
+        LOGGER.info("Switched off " + descriptor.isSwitchedOff());
 
         FreeStyleProject job = j.createFreeStyleProject();
         job.setAssignedNode(slave);
@@ -239,4 +239,6 @@ public class PsCleanerTest {
         Util.setPostProcCleaner(project, postCleaner);
     }
 
+    private static final Logger LOGGER = Logger.getLogger(PsCleanerTest.class.getName());
+    
 }
