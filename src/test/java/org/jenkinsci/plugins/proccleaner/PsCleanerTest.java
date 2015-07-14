@@ -124,18 +124,19 @@ public class PsCleanerTest {
         FreeStyleProject running = j.createFreeStyleProject();
 
         final Proc[] p = new Proc[1];
-        running.getBuildersList().add(addLongRunningStep(p));
-        running.scheduleBuild2(0);
+        running.getBuildersList().add(addLongRunningStep(p, true));
+        FreeStyleBuild running_build = running.scheduleBuild2(0).waitForStart();
 
         FreeStyleProject cleaned = j.createFreeStyleProject();
         setupKillers(cleaned);
 
         cleaned.scheduleBuild2(0).get();
 
+        assertTrue("Long running process isn't running!", running_build.isBuilding());
         verify(preCleaner, never()).clean(any(ProcCleaner.CleanRequest.class));
         verify(postCleaner, never()).clean(any(ProcCleaner.CleanRequest.class));
 
-        if(p[0].isAlive()) {
+        if(p[0] != null && p[0].isAlive()) {
             p[0].kill();
             assertFalse("Long running process is still alive!", p[0].isAlive());
         }
@@ -191,7 +192,7 @@ public class PsCleanerTest {
         assertNotNull("Long running process wasn't started!", p[0]);
 
         boolean status;
-        if (status = p[0].isAlive()) {
+        if (p[0] != null && (status = p[0].isAlive())) {
             p[0].kill();
             assertFalse("Long running process is still alive!", status);
         }
@@ -227,6 +228,10 @@ public class PsCleanerTest {
     }
 
     private TestBuilder addLongRunningStep(final Proc p[]) {
+        return addLongRunningStep(p, false);
+    }
+
+    private TestBuilder addLongRunningStep(final Proc p[], final boolean wait) {
         return new TestBuilder() {
             public boolean perform(AbstractBuild<?, ?> build,
                                    Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -249,6 +254,8 @@ public class PsCleanerTest {
                         .stdout(out)
                         .cmds(args)
                         .start();
+                if (wait)
+                    p[0].join();
                 return true;
             }
         };

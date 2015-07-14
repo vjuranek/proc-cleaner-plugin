@@ -54,7 +54,7 @@ import java.util.List;
         List<String> log = build.getLog(maxLines);
         StringBuilder logStr = new StringBuilder("");
         for (String line : log) {
-            logStr.append(line);
+            logStr.append(line+'\n');
         }
         return logStr.toString();
     }

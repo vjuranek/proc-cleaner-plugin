@@ -30,9 +30,9 @@ package org.jenkinsci.plugins.proccleaner;
 
 // Helper 'Long running' class
 public class Sleeper {
-    public static void main(String[] args) {
+    synchronized public static void main(String[] args) {
         try {
-            Thread.sleep(10000);
+            Sleeper.class.wait();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
