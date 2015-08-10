@@ -44,7 +44,9 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.Roles;
+
 import org.jenkinsci.remoting.RoleChecker;
 
 public abstract class ProcCleaner implements Describable<ProcCleaner>, ExtensionPoint, Serializable {
@@ -110,7 +112,7 @@ public abstract class ProcCleaner implements Describable<ProcCleaner>, Extension
      *
      * @author ogondza
      */
-    public static final class CleanRequest implements Callable<Void,Exception> {
+    public static final class CleanRequest extends MasterToSlaveCallable<Void,Exception> {
         private static final long serialVersionUID = -3747367960274628624L;
         private final ProcCleaner cleaner;
         private final BuildListener listener;
@@ -127,10 +129,6 @@ public abstract class ProcCleaner implements Describable<ProcCleaner>, Extension
 
         public BuildListener getListener() {
             return listener;
-        }
-
-        @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
         }
     }
 
