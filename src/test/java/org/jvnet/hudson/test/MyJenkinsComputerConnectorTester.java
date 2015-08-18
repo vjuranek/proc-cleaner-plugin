@@ -40,6 +40,8 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @see HudsonTestCase#computerConnectorTester
  * @since 1.436
+ *
+ * TODO: To be removed once JENKINS-29507 is fixed and plugin is based on Jenkins core with this fix
  */
 public class MyJenkinsComputerConnectorTester extends AbstractDescribableImpl<MyJenkinsComputerConnectorTester> {
     public final MyJenkinsRule jenkinsRule;

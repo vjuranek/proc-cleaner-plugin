@@ -21,6 +21,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.436
+ *
+ * TODO: To be removed once JENKINS-29507 is fixed and plugin is based on Jenkins core with this fix
  */
 @Retention(RUNTIME)
 @Documented

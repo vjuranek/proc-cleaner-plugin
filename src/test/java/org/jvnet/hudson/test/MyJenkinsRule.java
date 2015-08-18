@@ -128,6 +128,8 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  * @author Stephen Connolly
  * @since 1.436
  * @see RestartableJenkinsRule
+ *
+ * TODO: To be removed once JENKINS-29507 is fixed and plugin is based on Jenkins core with this fix
  */
 @SuppressWarnings({"deprecation","rawtypes"})
 public class MyJenkinsRule implements TestRule, MethodRule, RootAction {
