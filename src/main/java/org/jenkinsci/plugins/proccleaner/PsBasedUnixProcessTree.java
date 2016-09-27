@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,7 +48,7 @@ public class PsBasedUnixProcessTree extends PsBasedProcessTree {
             LOGGER.warning("'ps' command invocation " + cmd + " failed!");
             LOGGER.fine("Received output from 'ps' command invocation follows:");
 
-            if(getLog() != null) {
+            if (getLog() != null) {
                 getLog().println("WARNING: 'ps' command invocation " + cmd + " failed!");
                 getLog().println("DEBUG: Received output from 'ps' command invocation follows:");
             }
@@ -59,18 +61,26 @@ public class PsBasedUnixProcessTree extends PsBasedProcessTree {
             }
         }
 
-        PsBasedProcessTree ptree = new PsBasedUnixProcessTree();
         String line = reader.readLine(); // first line should be "PID  PPID COMMAND" - skip it
-        if(!line.matches("^\\s*PID\\s*PPID\\s*(COMMAND|ARGS)\\s*$")) {
+        if (StringUtils.isEmpty(line)) {
+            LOGGER.fine("Unrecognized output from 'ps' command invocation! Output is empty!");
+            if (getLog() != null) {
+                getLog().println("DEBUG: Unrecognized output from 'ps' command invocation! Output is empty!");
+            }
+            return null;
+
+        }
+        if (!line.matches("^\\s*PID\\s*PPID\\s*(COMMAND|ARGS)\\s*$")) {
             LOGGER.fine("Unrecognized first output line from 'ps' command invocation! Was: '" + line + "'");
-            if(getLog() != null) {
-            getLog().println("DEBUG: Unrecognized first output line from 'ps' command invocation! Was: '"
-                    + line + "'");
+            if (getLog() != null) {
+                getLog().println("DEBUG: Unrecognized first output line from 'ps' command invocation! Was: '"
+                        + line + "'");
             }
             return null;
         }
 
-        while((line = reader.readLine()) != null)
+        PsBasedProcessTree ptree = new PsBasedUnixProcessTree();
+        while ((line = reader.readLine()) != null)
             ptree.addProcess(line);
         ptree.setLog(getLog());
         return ptree;

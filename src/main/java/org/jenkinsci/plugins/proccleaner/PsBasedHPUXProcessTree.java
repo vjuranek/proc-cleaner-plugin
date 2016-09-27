@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -58,17 +60,26 @@ public class PsBasedHPUXProcessTree extends PsBasedProcessTree {
             }
         }
 
-        PsBasedProcessTree ptree = new PsBasedHPUXProcessTree();
         String line = reader.readLine(); // first line should be "UID PID PPID C STIME TTY TIME COMMAND" - skip it
+        if (StringUtils.isEmpty(line)) {
+            LOGGER.fine("Unrecognized output from 'ps' command invocation! Output is empty!");
+            if (getLog() != null) {
+                getLog().println("DEBUG: Unrecognized output from 'ps' command invocation! Output is empty!");
+            }
+            return null;
+
+        }
         if (!line.matches("^\\s*UID\\s*PID\\s*PPID\\s*C\\s*STIME\\s*TTY\\s*TIME\\s*COMMAND\\s*$")) {
             LOGGER.fine("Unrecognized first output line from 'ps' command invocation! Was: '" + line + "'");
-            if(getLog() != null) {
+            if (getLog() != null) {
                 getLog().println("DEBUG: Unrecognized first output line from 'ps' command invocation! Was: '"
                         + line + "'");
             }
 
             return null;
         }
+
+        PsBasedProcessTree ptree = new PsBasedHPUXProcessTree();
         while ((line = reader.readLine()) != null) {
             String[] ps = line.trim().split(" +", 8);
             if (ps.length < 8) {
