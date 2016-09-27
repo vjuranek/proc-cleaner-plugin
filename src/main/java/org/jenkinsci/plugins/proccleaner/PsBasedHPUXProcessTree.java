@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
@@ -44,11 +45,11 @@ public class PsBasedHPUXProcessTree extends PsBasedProcessTree {
         Process proc = pb.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         if (proc.waitFor() != 0) {
-            LOGGER.warning("'ps' command invocation " + cmd + " failed!");
+            LOGGER.warning("'ps' command invocation " + ArrayUtils.toString(cmd) + " failed!");
             LOGGER.fine("Received output from 'ps' command invocation follows:");
 
             if(getLog() != null) {
-                getLog().println("WARNING: 'ps' command invocation " + cmd + " failed!");
+                getLog().println("WARNING: 'ps' command invocation " + ArrayUtils.toString(cmd) + " failed!");
                 getLog().println("DEBUG: Received output from 'ps' command invocation follows:");
             }
 
