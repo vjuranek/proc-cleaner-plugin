@@ -59,6 +59,7 @@ public class PsBasedUnixProcessTree extends PsBasedProcessTree {
                 if(getLog() != null)
                     getLog().println("DEBUG: '" + line + "'");
             }
+            return null;
         }
 
         String line = reader.readLine(); // first line should be "PID  PPID COMMAND" - skip it

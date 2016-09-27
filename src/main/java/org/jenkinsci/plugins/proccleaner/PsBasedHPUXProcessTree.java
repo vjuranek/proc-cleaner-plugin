@@ -58,6 +58,7 @@ public class PsBasedHPUXProcessTree extends PsBasedProcessTree {
                 if(getLog() != null)
                     getLog().println("DEBUG: '" + line + "'");
             }
+            return null;
         }
 
         String line = reader.readLine(); // first line should be "UID PID PPID C STIME TTY TIME COMMAND" - skip it
