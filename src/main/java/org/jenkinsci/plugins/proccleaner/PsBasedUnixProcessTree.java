@@ -23,9 +23,13 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+
+import hudson.util.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -42,14 +46,24 @@ public class PsBasedUnixProcessTree extends PsBasedProcessTree {
         String[] cmd = {"ps","-u",user,"-o","pid,ppid,args"};
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
-        Process proc = pb.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        final Process proc = pb.start();
+        final StringWriter writer = new StringWriter();
+
+        try {
+            IOUtils.copy(proc.getInputStream(), writer);
+        } catch (IOException e) {
+            LOGGER.warning("'ps' command invocation IOException occurred!");
+        }
+
+        BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         if (proc.waitFor() != 0) {
-            LOGGER.warning("'ps' command invocation " + ArrayUtils.toString(cmd) + " failed!");
+            LOGGER.warning("'ps' command invocation " + ArrayUtils.toString(cmd) + " failed! Return code: "
+                    + proc.exitValue());
             LOGGER.fine("Received output from 'ps' command invocation follows:");
 
             if (getLog() != null) {
-                getLog().println("WARNING: 'ps' command invocation " + ArrayUtils.toString(cmd) + " failed!");
+                getLog().println("WARNING: 'ps' command invocation " + ArrayUtils.toString(cmd)
+                        + " failed! Return code: " + proc.exitValue());
                 getLog().println("DEBUG: Received output from 'ps' command invocation follows:");
             }
 
@@ -81,8 +95,11 @@ public class PsBasedUnixProcessTree extends PsBasedProcessTree {
         }
 
         PsBasedProcessTree ptree = new PsBasedUnixProcessTree();
-        while ((line = reader.readLine()) != null)
+        while ((line = reader.readLine()) != null) {
+            if(getLog() != null)
+                getLog().println("DEBUG: '" + line + "'");
             ptree.addProcess(line);
+        }
         ptree.setLog(getLog());
         return ptree;
     }

@@ -25,10 +25,12 @@ package org.jenkinsci.plugins.proccleaner;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import hudson.util.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 
 /**
@@ -43,13 +45,23 @@ public class PsBasedHPUXProcessTree extends PsBasedProcessTree {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
         Process proc = pb.start();
+        final StringWriter writer = new StringWriter();
+
+        try {
+            IOUtils.copy(proc.getInputStream(), writer);
+        } catch (IOException e) {
+            LOGGER.warning("'ps' command invocation IOException occurred!");
+        }
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         if (proc.waitFor() != 0) {
-            LOGGER.warning("'ps' command invocation " + ArrayUtils.toString(cmd) + " failed!");
+            LOGGER.warning("'ps' command invocation " + ArrayUtils.toString(cmd) + " failed! Return code: "
+                    + proc.exitValue());
             LOGGER.fine("Received output from 'ps' command invocation follows:");
 
             if(getLog() != null) {
-                getLog().println("WARNING: 'ps' command invocation " + ArrayUtils.toString(cmd) + " failed!");
+                getLog().println("WARNING: 'ps' command invocation " + ArrayUtils.toString(cmd)
+                        + " failed! Return code: " + proc.exitValue());
                 getLog().println("DEBUG: Received output from 'ps' command invocation follows:");
             }
 
@@ -77,7 +89,6 @@ public class PsBasedHPUXProcessTree extends PsBasedProcessTree {
                 getLog().println("DEBUG: Unrecognized first output line from 'ps' command invocation! Was: '"
                         + line + "'");
             }
-
             return null;
         }
 
@@ -93,6 +104,8 @@ public class PsBasedHPUXProcessTree extends PsBasedProcessTree {
 
                 return null;
             }
+            if(getLog() != null)
+                getLog().println("DEBUG: '" + line + "'");
             ptree.addProcess(ps[1] + ' ' + ps[2] + ' ' + ps[7]);
         }
         ptree.setLog(getLog());
