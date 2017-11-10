@@ -30,11 +30,12 @@ import hudson.model.FreeStyleProject;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.MyJenkinsRule;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class GroovyScriptCleanerTest {
 
-    @Rule public MyJenkinsRule j = new MyJenkinsRule();
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test public void runGroovy() throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();

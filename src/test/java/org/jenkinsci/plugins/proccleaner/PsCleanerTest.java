@@ -23,52 +23,48 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.withSettings;
-import static org.jenkinsci.plugins.proccleaner.Util.getLogAsString;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
-import hudson.model.FreeStyleBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.slaves.DumbSlave;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.OneShotEvent;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.logging.Logger;
-
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
-
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.jenkinsci.plugins.proccleaner.PsCleaner.PsCleanerDescriptor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MyJenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import static org.jenkinsci.plugins.proccleaner.Util.getLogAsString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 
 public class PsCleanerTest {
 
-    @Rule public MyJenkinsRule j = new MyJenkinsRule();
+    @Rule public JenkinsRule j = new JenkinsRule();
     private PsCleaner preCleaner;
     private PsCleaner postCleaner;
 
@@ -111,7 +107,7 @@ public class PsCleanerTest {
     }
 
     @Test public void doNotRunCleanForMatrixParent() throws Exception {
-        MatrixProject m = j.createMatrixProject();
+        MatrixProject m = j.createProject(MatrixProject.class);
         m.setAxes(new AxisList(new TextAxis("axis", "a")));
         setupKillers(m);
 
