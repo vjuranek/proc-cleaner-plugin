@@ -45,7 +45,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <surefire.useFile>false</surefire.useFile>
         <jenkins.version>1.642</jenkins.version>
-        <jenkins-test-harness.version>2.21</jenkins-test-harness.version>
+        <findbugs.failOnError>false</findbugs.failOnError>
         <concurrency>1C</concurrency>
     </properties>
 
