@@ -2,12 +2,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <j:set var="currentCleaner" value="${instance.getCleaner()}" />
     <f:dropdownList name="cleaner" title="Cleaner">
-        <j:invokeStatic var="descriptors" className="org.jenkinsci.plugins.proccleaner.ProcCleaner" method="getCleanerDescriptors" />
-        <j:forEach var="descriptor" items="${descriptors}" varStatus="loop">
+        <j:forEach var="d" items="${descriptor.getCleanerDescriptors(currentCleaner)}" varStatus="loop">
             <!--  j:set var="cleaner" value="${descriptor==currentCleaner.descriptor?currentCleaner:null}" / -->
-            <f:dropdownListBlock title="${descriptor.displayName}"
-                value="${loop.index}" selected="${descriptor==currentCleaner.descriptor}" staplerClass="${descriptor.clazz.name}">
-                <st:include page="${descriptor.configPage}" from="${descriptor}" />
+            <f:dropdownListBlock title="${d.displayName}"
+                value="${loop.index}" selected="${d==currentCleaner.descriptor}" staplerClass="${d.clazz.name}">
+                <st:include page="${d.configPage}" from="${d}" />
             </f:dropdownListBlock>
         </j:forEach>
     </f:dropdownList>

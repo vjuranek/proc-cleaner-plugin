@@ -23,20 +23,17 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import hudson.Extension;
-
-import java.io.PrintStream;
-
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * @deprecated but kept so the user created script is not thrown away. The cleaner will be presented in UI, the script
+ * will be preserved but never invoked.
+ */
+@Deprecated
 public class GroovyScriptCleaner extends ProcCleaner {
 
     private String script;
-    private transient ClassLoader cl;
 
     @DataBoundConstructor
     public GroovyScriptCleaner(String script) {
@@ -49,31 +46,10 @@ public class GroovyScriptCleaner extends ProcCleaner {
 
     @Override
     public void clean(CleanRequest request) {
-        CompilerConfiguration compilerConfig = new CompilerConfiguration();
-        compilerConfig.addCompilationCustomizers(new ImportCustomizer().addStarImports(
-                "jenkins",
-                "jenkins.model",
-                "hudson",
-                "hudson.model"));
-
-        if (cl == null) {
-            cl = Thread.currentThread().getContextClassLoader();
-        }
-
-        GroovyShell shell = new GroovyShell(cl, new Binding(), compilerConfig);
-        final PrintStream scriptOut = request.getListener().getLogger();
-        shell.setVariable("out", scriptOut);
-        try {
-            Object output = shell.evaluate(script);
-            if(output != null) {
-                scriptOut.println("Result: " + output);
-            }
-        } catch (Throwable t) {
-            t.printStackTrace(scriptOut);
-        }
+        throw new AssertionError(Messages.GroovyScriptCleaner_DisplayName());
     }
 
-    @Extension
+    @Extension(ordinal = Double.MAX_VALUE)
     public static class GroovyScriptCleanerDescriptor extends ProcCleanerDescriptor {
         @Override
         public String getDisplayName() {

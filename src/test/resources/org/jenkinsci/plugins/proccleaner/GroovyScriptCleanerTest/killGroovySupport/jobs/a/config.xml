@@ -1,0 +1,26 @@
+<project>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers>
+    <org.jenkinsci.plugins.proccleaner.PostBuildCleanup>
+      <cleaner class="org.jenkinsci.plugins.proccleaner.GroovyScriptCleaner">
+        <script>println 'postcleaner'; return 'postcleaned!'</script>
+      </cleaner>
+    </org.jenkinsci.plugins.proccleaner.PostBuildCleanup>
+  </publishers>
+  <buildWrappers>
+    <org.jenkinsci.plugins.proccleaner.PreBuildCleanup>
+      <cleaner class="org.jenkinsci.plugins.proccleaner.GroovyScriptCleaner">
+        <script>println 'precleaner'; return 'precleaned!'</script>
+      </cleaner>
+    </org.jenkinsci.plugins.proccleaner.PreBuildCleanup>
+  </buildWrappers>
+</project>

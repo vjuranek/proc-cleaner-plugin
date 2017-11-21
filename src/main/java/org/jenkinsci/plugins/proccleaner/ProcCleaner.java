@@ -158,10 +158,6 @@ public abstract class ProcCleaner implements Describable<ProcCleaner>, Extension
         return Jenkins.getInstance().getExtensionList(ProcCleaner.class);
     }
 
-    public static DescriptorExtensionList<ProcCleaner,Descriptor<ProcCleaner>> getCleanerDescriptors() {
-        return Jenkins.getInstance().<ProcCleaner,Descriptor<ProcCleaner>>getDescriptorList(ProcCleaner.class);
-    }
-
     public static class ProcCleanerDescriptor extends Descriptor<ProcCleaner> {
 
         protected ProcCleanerDescriptor(Class<? extends ProcCleaner> clazz) {

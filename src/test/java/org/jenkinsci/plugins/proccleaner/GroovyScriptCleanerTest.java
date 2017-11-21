@@ -23,41 +23,52 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
-import static org.junit.Assert.assertTrue;
-import static org.jenkinsci.plugins.proccleaner.Util.getLogAsString;
-import hudson.model.Build;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-
+import hudson.model.Result;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class GroovyScriptCleanerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @Test public void runGroovy() throws Exception {
-        FreeStyleProject job = j.createFreeStyleProject();
-        Util.setPreProcCleaner(job, new GroovyScriptCleaner("println 'precleaner'; return 'precleaned!'"));
-        Util.setPostProcCleaner(job, new GroovyScriptCleaner("println 'postcleaner'; return 'postcleaned!'"));
+    @Test @Issue("SECURITY-489") @LocalData
+    public void killGroovySupport() throws Exception {
+        final String EXPECTED_MESSAGE = Messages.GroovyScriptCleaner_DisplayName();
 
-        Build<?,?> build = job.scheduleBuild2(0).get();
-        String log = getLogAsString(build);
+        FreeStyleProject a = j.jenkins.getItem("a", j.jenkins, FreeStyleProject.class);
+        FreeStyleBuild build = a.scheduleBuild2(0).get();
+        j.assertBuildStatus(Result.FAILURE, build);
+        j.assertLogContains(EXPECTED_MESSAGE, build);
 
-        assertTrue(log.contains("precleaner"));
-        assertTrue(log.contains("Result: precleaned!"));
-        assertTrue(log.contains("postcleaner"));
-        assertTrue(log.contains("Result: postcleaned!"));
-    }
+        HtmlPage page = j.createWebClient().getPage(a, "configure");
+        String resp = page.getWebResponse().getContentAsString();
+        assertThat(resp, containsString(EXPECTED_MESSAGE));
+        assertThat(resp, containsString("println 'precleaner'; return 'precleaned!'"));
+        assertThat(resp, containsString("println 'postcleaner'; return 'postcleaned!'"));
 
-    @Test public void failGroovy() throws Exception {
-        FreeStyleProject job = j.createFreeStyleProject();
-        Util.setPreProcCleaner(job, new GroovyScriptCleaner("throw new NullPointerException('Failed groovy script');"));
+        j.configRoundtrip(a);
 
-        Build<?,?> build = job.scheduleBuild2(0).get();
-        String log = getLogAsString(build);
+        page = j.createWebClient().getPage(a, "configure");
+        assertThat(page.getWebResponse().getContentAsString(), containsString(EXPECTED_MESSAGE));
 
-        assertTrue(log.contains("java.lang.NullPointerException: Failed groovy script"));
+        assertEquals(
+                "println 'precleaner'; return 'precleaned!'",
+                ((GroovyScriptCleaner) a.getBuildWrappersList().get(PreBuildCleanup.class).getCleaner()).getScript()
+        );
+
+        assertEquals(
+                "println 'postcleaner'; return 'postcleaned!'",
+                ((GroovyScriptCleaner) a.getPublishersList().get(PostBuildCleanup.class).getCleaner()).getScript()
+        );
     }
 }

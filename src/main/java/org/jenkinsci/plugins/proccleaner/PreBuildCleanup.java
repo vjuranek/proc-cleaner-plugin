@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.proccleaner;
 
+import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
@@ -31,7 +32,12 @@ import hudson.model.Descriptor;
 import hudson.tasks.BuildWrapper;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class PreBuildCleanup extends BuildWrapper {
@@ -68,6 +74,23 @@ public class PreBuildCleanup extends BuildWrapper {
         @Override
         public String getDisplayName() {
             return Messages.PreBuildCleanup_DisplayName();
+        }
+
+        public static Collection<Descriptor<ProcCleaner>> getCleanerDescriptors(ProcCleaner current) {
+            DescriptorExtensionList<ProcCleaner, Descriptor<ProcCleaner>> all = Jenkins.getInstance().<ProcCleaner, Descriptor<ProcCleaner>>getDescriptorList(ProcCleaner.class);
+
+
+            boolean preservingGroovyScript = current instanceof GroovyScriptCleaner;
+            List<Descriptor<ProcCleaner>> out = new ArrayList<Descriptor<ProcCleaner>>();
+            for (Descriptor<ProcCleaner> descriptor : all) {
+                if (descriptor instanceof GroovyScriptCleaner.GroovyScriptCleanerDescriptor && !preservingGroovyScript) {
+                    // Groovy descriptor needs to be registered for xstream/data-binding to work. So we do not offer it
+                    // on config page unless it is the current cleaner kind used.
+                    continue;
+                }
+                out.add(descriptor);
+            }
+            return out;
         }
     }
 
