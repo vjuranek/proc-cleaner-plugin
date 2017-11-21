@@ -24,6 +24,8 @@
 package org.jenkinsci.plugins.proccleaner;
 
 import hudson.Extension;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -31,6 +33,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * will be preserved but never invoked.
  */
 @Deprecated
+@Restricted(NoExternalUse.class)
 public class GroovyScriptCleaner extends ProcCleaner {
 
     private String script;
@@ -49,7 +52,9 @@ public class GroovyScriptCleaner extends ProcCleaner {
         throw new AssertionError(Messages.GroovyScriptCleaner_DisplayName());
     }
 
-    @Extension(ordinal = Double.MAX_VALUE)
+    @Extension
+    @Deprecated
+    @Restricted(NoExternalUse.class)
     public static class GroovyScriptCleanerDescriptor extends ProcCleanerDescriptor {
         @Override
         public String getDisplayName() {
