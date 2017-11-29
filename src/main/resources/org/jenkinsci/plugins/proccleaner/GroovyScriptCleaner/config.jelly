@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <f:entry title="Groovy cleanup script" field="script">
-  <string><font color="red">Groovy support was discontinued! The script will not be executed.</font></string>
+  <strong><font color="red">Groovy support was discontinued! The script will not be executed.</font></strong>
   <f:textarea value="${instance.cleaner.script}"/>
 </f:entry>
 </j:jelly>
