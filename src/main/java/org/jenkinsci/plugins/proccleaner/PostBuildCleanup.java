@@ -60,7 +60,7 @@ public class PostBuildCleanup extends Notifier {
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
-        return BuildStepMonitor.STEP;
+        return BuildStepMonitor.NONE;
     }
 
     @Extension(ordinal = -999)
