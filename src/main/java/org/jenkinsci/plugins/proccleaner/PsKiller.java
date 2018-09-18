@@ -50,7 +50,7 @@ public abstract class PsKiller implements ExtensionPoint, Serializable {
         ptree.setLog(log);
         ptree = ptree.createProcessTreeFor(user);
         if (ptree != null) {
-            LOGGER.fine("Process tree: " + ptree.toString());
+            LOGGER.info("Process tree: " + ptree.toString());
             int me = ProcCleaner.getpid();
             doKill(ptree, me);
         } else {
