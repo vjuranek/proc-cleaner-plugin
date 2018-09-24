@@ -26,6 +26,9 @@ package org.jenkinsci.plugins.proccleaner;
 import hudson.Extension;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -36,6 +39,8 @@ import org.kohsuke.stapler.StaplerRequest;
 public class PsCleaner extends ProcCleaner {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(PsCleaner.class.getName());
 
     private final String killerType;
     private final PsKiller killer;
@@ -64,7 +69,34 @@ public class PsCleaner extends ProcCleaner {
         }
 
         try {
-            killer.kill(System.getProperty("user.name", ""), request.getListener().getLogger());
+            String osName = System.getProperty( "os.name" ).toLowerCase();
+            String className = null;
+            String methodName = "getUsername";
+            String user = null;
+
+            // https://issues.jenkins-ci.org/browse/JENKINS-53739
+            if (osName.contains("windows")) {
+                className = "com.sun.security.auth.module.NTSystem";
+                methodName = "getName";
+            } else if (osName.contains("linux")) {
+                className = "com.sun.security.auth.module.UnixSystem";
+            } else if (osName.contains("solaris") || osName.contains("sunos")) {
+                className = "com.sun.security.auth.module.SolarisSystem";
+            }
+            if (className != null) {
+                try {
+                    Class<?> c = Class.forName(className);
+                    Method method = c.getDeclaredMethod(methodName);
+                    Object o = c.newInstance();
+                    user = (String) method.invoke(o);
+                } catch (Throwable e) {
+                    LOGGER.log(Level.WARNING, "Unexpected exception occurred: ", e);
+                }
+            }
+            if (user == null) {
+                user = System.getProperty("user.name", "");
+            }
+            killer.kill(user, request.getListener().getLogger());
         } catch(IOException e) {
             e.printStackTrace();
             throw e;
